@@ -1,0 +1,10 @@
+packages:
+  - '.'
+
+allowBuilds:
+  "@contextatlas/core": true
+  "@nestjs/core": true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
+  unrs-resolver: true

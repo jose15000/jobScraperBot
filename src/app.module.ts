@@ -1,0 +1,16 @@
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config'
+import { ScrapserviceService } from './services/scrapservice/scrapservice.service';
+import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
+import { TaskService } from './services/task-service/task-service.service';
+import { ScheduleModule } from '@nestjs/schedule'
+import { BotService } from './services/bot/bot.service';
+
+@Module({
+  imports: [ConfigModule.forRoot(), ScheduleModule.forRoot()],
+  controllers: [AppController],
+  providers: [AppService, ScrapserviceService, WhatsappService, TaskService, BotService],
+})
+export class AppModule { }

@@ -1,0 +1,430 @@
+{
+  "nodes": [
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts",
+        "name": "app.service.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts#AppService",
+      "type": "class",
+      "data": {
+        "name": "AppService"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts#AppService.getHello",
+      "type": "method",
+      "data": {
+        "name": "AppService.getHello",
+        "className": "AppService",
+        "methodName": "getHello"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts",
+        "name": "main.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts#bootstrap",
+      "type": "function",
+      "data": {
+        "name": "bootstrap"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+        "name": "app.e2e-spec.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+        "name": "app.controller.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController",
+      "type": "class",
+      "data": {
+        "name": "AppController"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.getHello",
+      "type": "method",
+      "data": {
+        "name": "AppController.getHello",
+        "className": "AppController",
+        "methodName": "getHello"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.testScrape",
+      "type": "method",
+      "data": {
+        "name": "AppController.testScrape",
+        "className": "AppController",
+        "methodName": "testScrape"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.create",
+      "type": "method",
+      "data": {
+        "name": "AppController.create",
+        "className": "AppController",
+        "methodName": "create"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+        "name": "app.module.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts#AppModule",
+      "type": "class",
+      "data": {
+        "name": "AppModule"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
+        "name": "icreateinstancedto.interface.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts#CreateInstanceDto",
+      "type": "interface",
+      "data": {
+        "name": "CreateInstanceDto"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts",
+        "name": "isearch.interface.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts#Isearch",
+      "type": "interface",
+      "data": {
+        "name": "Isearch"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+        "name": "scrapservice.service.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts#ScrapserviceService",
+      "type": "class",
+      "data": {
+        "name": "ScrapserviceService"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts#ScrapserviceService.scrape",
+      "type": "method",
+      "data": {
+        "name": "ScrapserviceService.scrape",
+        "className": "ScrapserviceService",
+        "methodName": "scrape"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+        "name": "whatsapp-service.service.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "type": "class",
+      "data": {
+        "name": "WhatsappService"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.createInstance",
+      "type": "method",
+      "data": {
+        "name": "WhatsappService.createInstance",
+        "className": "WhatsappService",
+        "methodName": "createInstance"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts#AppService",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts#AppService",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts#AppService.getHello",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts#bootstrap",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+core@11.1.21_@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2__@nestjs+_5c7abf454a30b2ee4fe2e78caa84ad46/node_modules/@nestjs/core/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/main.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+testing@11.1.21_@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2__@nest_f2f2551b12de950cef088f19be4d4b20/node_modules/@nestjs/testing/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@types+supertest@7.2.0/node_modules/@types/supertest/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@types+supertest@7.2.0/node_modules/@types/supertest/types.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.getHello",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.getHello",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts#AppService.getHello",
+      "type": "CALLS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.testScrape",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.testScrape",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts#ScrapserviceService.scrape",
+      "type": "CALLS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.create",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts#AppController.create",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.createInstance",
+      "type": "CALLS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts#AppModule",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+config@4.0.4_@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2__rxjs@7.8.2/node_modules/@nestjs/config/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts#CreateInstanceDto",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts#Isearch",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts#ScrapserviceService",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts#ScrapserviceService",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts#ScrapserviceService.scrape",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.createInstance",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/node_modules/.pnpm/@nestjs+config@4.0.4_@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2__rxjs@7.8.2/node_modules/@nestjs/config/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
+      "type": "IMPORTS"
+    }
+  ],
+  "mtimes": {
+    "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.spec.ts": 1779308384621.6035,
+    "/home/jooj/Documents/projects/jobsearchbot/src/app.controller.ts": 1779488089082.121,
+    "/home/jooj/Documents/projects/jobsearchbot/src/app.module.ts": 1779487951369.8015,
+    "/home/jooj/Documents/projects/jobsearchbot/src/app.service.ts": 1779308384621.5208,
+    "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts": 1779393837740.9727,
+    "/home/jooj/Documents/projects/jobsearchbot/src/interfaces/isearch/isearch.interface.ts": 1779330018861.1357,
+    "/home/jooj/Documents/projects/jobsearchbot/src/main.ts": 1779329312654.681,
+    "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.spec.ts": 1779308770391.9033,
+    "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts": 1779393598457.339,
+    "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.spec.ts": 1779330715950.8892,
+    "/home/jooj/Documents/projects/jobsearchbot/src/services/whatsapp-service/whatsapp-service.service.ts": 1779496568125.5574,
+    "/home/jooj/Documents/projects/jobsearchbot/test/app.e2e-spec.ts": 1779308384621.6687
+  }
+}

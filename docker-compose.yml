@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobsearchbot-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+    restart: always
+    networks:
+      - evolution-net
+    depends_on:
+      evolution-api:
+        condition: service_healthy
+
+  evolution-api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - evolution-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    command: ["postgres", "-c", "max_connections=1000"]
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=PASSWORD
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - evolution-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=PASSWORD
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "4000:80"
+    networks:
+      - evolution-net
+
+volumes:
+  evolution_instances:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  evolution-net:
+    name: evolution-net
+    driver: bridge
