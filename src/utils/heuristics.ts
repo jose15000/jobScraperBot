@@ -77,18 +77,15 @@ const juniorKeywords = [
     'junior',
     'júnior',
     'jr',
-    'estágio',
-    'estagiario',
-    'estagiário',
     'trainee',
     'iniciante',
     'sem experiência',
+    'pleno',
+    'pl',
 ];
 
 // Senioridades indesejadas
 const seniorKeywords = [
-    'pleno',
-    'pl',
     'senior',
     'sênior',
     'sr',

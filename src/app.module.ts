@@ -7,10 +7,20 @@ import { WhatsappService } from './services/whatsapp-service/whatsapp-service.se
 import { TaskService } from './services/task-service/task-service.service';
 import { ScheduleModule } from '@nestjs/schedule'
 import { BotService } from './services/bot/bot.service';
+import { JobHistoryRepository } from './services/task-service/job-history.repository';
+import { JobDigestFormatter } from './services/task-service/job-digest.formatter';
 
 @Module({
   imports: [ConfigModule.forRoot(), ScheduleModule.forRoot()],
   controllers: [AppController],
-  providers: [AppService, ScrapserviceService, WhatsappService, TaskService, BotService],
+  providers: [
+    AppService,
+    ScrapserviceService,
+    WhatsappService,
+    TaskService,
+    BotService,
+    JobHistoryRepository,
+    JobDigestFormatter,
+  ],
 })
 export class AppModule { }

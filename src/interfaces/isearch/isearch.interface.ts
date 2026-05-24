@@ -1,4 +1,4 @@
-export interface Isearch {
+export interface    Isearch {
     contentType?: string;
     maxPosts?: number;
     maxReactions?: number;

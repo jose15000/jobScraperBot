@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ScrapserviceService } from './services/scrapservice/scrapservice.service';
 import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
+import { TaskService } from './services/task-service/task-service.service';
 import type { CreateInstanceDto } from './interfaces/ICreateInstanceDTO/icreateinstancedto.interface';
 import type { SendMessageDTO } from './interfaces/SendMessageDTO';
 
@@ -10,7 +11,8 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly scrapService: ScrapserviceService,
-    private readonly whatsappService: WhatsappService
+    private readonly whatsappService: WhatsappService,
+    private readonly taskService: TaskService,
   ) { }
 
   @Get()
@@ -18,11 +20,10 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('test-scrape')
-  async testScrape() {
-    return await this.scrapService.scrape({
-      searchQueries: [`"vaga" AND "react" AND "junior" AND "remoto"`],
-    });
+  @Get('test-cron')
+  async testCron() {
+    await this.taskService.runScrapeJob();
+    return { message: 'Scrape triggered manually' };
   }
 
   @Post('instance/create')
