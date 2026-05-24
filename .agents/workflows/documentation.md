@@ -2,56 +2,95 @@
 description: Project specs for context maintenance
 ---
 
-# Project Documentation & Specifications
+# Project Documentation & Specifications — JobSearchBot
 
-> **Project Goal:** [Briefly describe what this project or module does and the main problem it solves.]
+> **Project Goal:** Automated NestJS pipeline designed to scrape job opportunities from major platforms (LinkedIn, Indeed, Glassdoor) via Apify, process listings through a custom local heuristic/scoring engine, deduplicate processed links, and batch notify qualified junior/mid developer positions to WhatsApp via the Evolution API in a clean digest format.
 
 ---
 
 ## 1. Architecture & Design Patterns
 
-[Describe the core architecture pattern adopted by this project. e.g., Clean Architecture, MVC, Layered, Hexagonal.]
+The project is built on **NestJS** and follows a **Clean Architecture / Service-Repository** modular pattern to ensure decoupling of data persistence, message formatting, business rules, and scraping orchestration.
 
-**Directory Structure:**
+### Directory Structure:
 ```text
 src/
-  ├── core/        # [Domain logic, Entities, Interfaces, Use Cases]
-  ├── shared/      # [Shared utilities, constants, exceptions]
-  └── infra/       # [Database access, external services, frameworks]
+  ├── interfaces/
+  │     └── isearch/             # Search query definitions and shapes
+  ├── services/
+  │     ├── bot/                 # Orchestrator interface linking heuristics and API requests
+  │     ├── scrapservice/        # Low-level HTTP integrations with Apify scrapers
+  │     ├── whatsapp-service/    # Low-level integrations with the Evolution API
+  │     └── task-service/        # Sequential cron-job scheduler & delegates
+  │           ├── job-digest.formatter.ts   # Formatting (Presentation Layer)
+  │           ├── job-history.repository.ts # Local persistent file storage (Data Layer)
+  │           └── task-service.service.ts   # Pipeline Orchestration (Application Layer)
+  └── utils/
+        └── heuristics.ts        # Custom logic engine (Rules & Heuristics)
 ```
 
-**Required Patterns:**
-- **[Pattern 1]:** [Example: Dependency Injection must be used for all services.]
-- **[Pattern 2]:** [Example: Use DTOs for communication between external layers and domain.]
-- **[Pattern 3]:** [Example: Controllers should only handle HTTP logic and delegate to Use Cases.]
+### Core Architecture & SOLID Principles:
+1. **Single Responsibility Principle (SRP):**
+   - **`TaskService`**: Solely responsible for orchestrating the cron-job pipeline.
+   - **`JobHistoryRepository`**: Solely handles job link persistence and deduplication check.
+   - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages.
+   - **`ScrapserviceService`**: Handles low-level scraper HTTP request logic.
+   - **`Heuristics Engine`**: Evaluates job descriptions to classify them.
+2. **Open-Closed Principle (OCP):**
+   - Adding new scrapers (e.g. Indeed, Glassdoor) can be done by extending `ScrapserviceService` methods and adding them to `TaskService` without modifying the core deduplication repository or formatting logic.
+3. **Dependency Injection (DI):**
+   - All modules, services, and repositories are decoupled and resolved natively through NestJS IoC Container (`app.module.ts`).
 
 ---
 
 ## 2. Business Rules
 
-[List the critical business constraints that must *never* be violated. This is essential for AI agents and human developers to avoid introducing structural bugs.]
+These core constraints govern the application's behavior and must **never** be violated:
 
-1. **[Rule 1]:** [Example: User passwords must be hashed before saving.]
-2. **[Rule 2]:** [Example: Use soft-delete instead of hard-delete for core entities.]
-3. **[Rule 3]:** [Example: Only admin roles can access financial endpoints.]
+1. **Persistent Deduplication:** 
+   - A job posting URL must **never** be notified to WhatsApp more than once. All successfully notified links must be registered in the `vagas-enviadas.json` repository.
+   - Before evaluating a posting through the heuristic engine, the URL must be matched against the repository. If it exists, it must be skipped immediately.
+2. **Anti-Spam / Batch Notification (Digest):**
+   - Individual WhatsApp message alerts are strictly prohibited to prevent WhatsApp number bans.
+   - All qualified jobs within a single cron run must be consolidated into a single digest message.
+   - If no new qualified jobs are found in a run, no message should be sent.
+3. **Keyword-Based Heuristic Scoring:**
+   - Jobs are evaluated by checking the occurrence of junior vs. senior/managerial keywords.
+   - The engine must filter out internships and strictly penalize senior positions to ensure accurate junior/mid-level developer matches.
 
 ---
 
 ## 3. Contextual Awareness
 
-[Describe code conventions, existing utilities that must be reused, and overall technical context.]
+Technical context, libraries, and coding guidelines:
 
-- **Stack & Setup:** [Example: TypeScript strict mode, Node.js, React]
-- **Core Libraries:** [Example: Prisma for ORM, Zod for schema validation]
-- **Code Reuse:** [Example: Always use `src/shared/logger` instead of native `console.log`.]
-- **Naming Conventions:** [Example: Prefix interfaces with `I`, use `camelCase` for variables and `PascalCase` for classes.]
+- **Stack & Setup:** TypeScript (Strict mode), NestJS v11, Node.js (Fetch API), Docker & Docker Compose.
+- **Environment Management:** 
+   - The application loads configuration via NestJS `ConfigModule.forRoot()`.
+   - Local development uses `.env` in the project root.
+   - Key variables include `APIFY_URL` (which MUST point to a síncrono endpoint like `/run-sync-get-dataset-items` to fetch dataset arrays directly), `EVOLUTION_API_URL` and `WHATSAPP_NUMBER`.
+- **Naming Conventions:**
+   - Use `camelCase` for variable and function names.
+   - Use `PascalCase` for class names, components, and controllers.
+   - Suffix interfaces with `Dto` or `Interface` depending on their domain scope.
 
 ---
 
 ## 4. Workflows & Maintenance
 
-[Day-to-day commands and developer instructions.]
+Common commands and pipeline validation tasks:
 
-- **Testing:** [Example: Run `npm run test` ensuring all specs pass before committing.]
-- **Running Locally:** [Example: Run `npm run dev` to start the local environment.]
-- **Documentation:** When the architecture or business rules change, please ensure this document is kept up-to-date.
+- **Running Locally:** 
+  ```bash
+  pnpm start:dev
+  ```
+- **Local Testing:**
+  Trigger execution manually through the local API test routes:
+  ```bash
+  curl http://localhost:3000/test-cron
+  ```
+- **Docker Production Deploy:**
+  ```bash
+  sudo docker compose up -d --build api
+  ```
+- **Documentation Rule:** Any new integrations (e.g. Indeed, Glassdoor) or database changes must be immediately recorded here to preserve context for future pair programmers.
