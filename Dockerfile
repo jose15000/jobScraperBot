@@ -13,7 +13,7 @@ FROM base AS build
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Instala todas as dependências (incluindo devDependencies para build)
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm run build
@@ -21,7 +21,7 @@ RUN pnpm run build
 # --- Estágio 2: Instalação de dependências exclusivas de produção ---
 FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile
 
 # --- Estágio 3: Runner final de produção ultra leve ---
 FROM base AS runner
