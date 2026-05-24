@@ -14,7 +14,7 @@ export class TaskService {
         private readonly digestFormatter: JobDigestFormatter,
     ) { }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron('0 0 8-23 * * *')
     async runScrapeJob() {
         this.logger.log('Iniciando job de scraping sequencial...');
 
