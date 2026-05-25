@@ -4,7 +4,7 @@ description: Project specs for context maintenance
 
 # Project Documentation & Specifications — JobSearchBot
 
-> **Project Goal:** Automated NestJS pipeline designed to scrape job opportunities from major platforms (LinkedIn, Indeed, Glassdoor) via Apify, process listings through a custom local heuristic/scoring engine, deduplicate processed links, and batch notify qualified junior/mid developer positions to WhatsApp via the Evolution API in a clean digest format.
+> **Project Goal:** Automated NestJS **one-shot pipeline** designed to scrape job opportunities from major platforms (LinkedIn, Indeed, Glassdoor) via Apify, process listings through a custom local heuristic/scoring engine, deduplicate processed links, and batch notify qualified junior/mid developer positions to WhatsApp via the Evolution API in a clean digest format. The container is scheduled externally by **Railway Cron** (every 1h) and exits after each run.
 
 ---
 
@@ -16,30 +16,36 @@ The project is built on **NestJS** and follows a **Clean Architecture / Service-
 ```text
 src/
   ├── interfaces/
-  │     └── isearch/             # Search query definitions and shapes
+  │     ├── isearch/             # LinkedIn search query definitions and shapes
+  │     └── glassdoor-search/    # Glassdoor search query definitions and shapes
   ├── services/
   │     ├── bot/                 # Orchestrator interface linking heuristics and API requests
-  │     ├── scrapservice/        # Low-level HTTP integrations with Apify scrapers
+  │     ├── scrapservice/        # Low-level HTTP integrations with Apify (LinkedIn)
+  │     ├── glassdoor/           # Low-level HTTP integrations with Apify (Glassdoor)
   │     ├── whatsapp-service/    # Low-level integrations with the Evolution API
-  │     └── task-service/        # Sequential cron-job scheduler & delegates
+  │     └── task-service/        # One-shot pipeline execution & delegates
   │           ├── job-digest.formatter.ts   # Formatting (Presentation Layer)
-  │           ├── job-history.repository.ts # Local persistent file storage (Data Layer)
+  │           ├── job-history.repository.ts # PostgreSQL persistent repository (Data Layer)
   │           └── task-service.service.ts   # Pipeline Orchestration (Application Layer)
+  ├── main.ts                    # One-shot bootstrap: runs pipeline and exits
   └── utils/
         └── heuristics.ts        # Custom logic engine (Rules & Heuristics)
 ```
 
 ### Core Architecture & SOLID Principles:
 1. **Single Responsibility Principle (SRP):**
-   - **`TaskService`**: Solely responsible for orchestrating the cron-job pipeline.
+   - **`TaskService`**: Solely responsible for orchestrating the one-shot pipeline.
    - **`JobHistoryRepository`**: Solely handles job link persistence and deduplication check.
    - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages.
-   - **`ScrapserviceService`**: Handles low-level scraper HTTP request logic.
+   - **`ScrapserviceService`**: Handles low-level LinkedIn scraper HTTP request logic.
+   - **`GlassdoorService`**: Handles low-level Glassdoor scraper HTTP request logic.
    - **`Heuristics Engine`**: Evaluates job descriptions to classify them.
 2. **Open-Closed Principle (OCP):**
-   - Adding new scrapers (e.g. Indeed, Glassdoor) can be done by extending `ScrapserviceService` methods and adding them to `TaskService` without modifying the core deduplication repository or formatting logic.
+   - Adding new scrapers (e.g. Indeed) can be done by creating a new service (like `GlassdoorService`) and adding it to `TaskService` without modifying the core deduplication repository or formatting logic.
 3. **Dependency Injection (DI):**
    - All modules, services, and repositories are decoupled and resolved natively through NestJS IoC Container (`app.module.ts`).
+4. **One-Shot Execution Model:**
+   - `main.ts` uses `NestFactory.createApplicationContext()` (no HTTP server) to bootstrap DI, runs `TaskService.runScrapeJob()`, and calls `process.exit()` when done. Railway Cron handles the schedule externally (`0 * * * *` = every hour).
 
 ---
 
@@ -48,7 +54,7 @@ src/
 These core constraints govern the application's behavior and must **never** be violated:
 
 1. **Persistent Deduplication:** 
-   - A job posting URL must **never** be notified to WhatsApp more than once. All successfully notified links must be registered in the `vagas-enviadas.json` repository.
+   - A job posting URL must **never** be notified to WhatsApp more than once. All successfully notified links must be registered in the PostgreSQL `sent_jobs` table via `JobHistoryRepository`.
    - Before evaluating a posting through the heuristic engine, the URL must be matched against the repository. If it exists, it must be skipped immediately.
 2. **Anti-Spam / Batch Notification (Digest):**
    - Individual WhatsApp message alerts are strictly prohibited to prevent WhatsApp number bans.
@@ -64,11 +70,12 @@ These core constraints govern the application's behavior and must **never** be v
 
 Technical context, libraries, and coding guidelines:
 
-- **Stack & Setup:** TypeScript (Strict mode), NestJS v11, Node.js (Fetch API), Docker & Docker Compose.
+- **Stack & Setup:** TypeScript (Strict mode), NestJS v11, Node.js (Fetch API), Docker & Docker Compose, Railway Cron.
+- **Execution Model:** One-shot standalone (no HTTP server). Railway schedules the container every 1h.
 - **Environment Management:** 
    - The application loads configuration via NestJS `ConfigModule.forRoot()`.
    - Local development uses `.env` in the project root.
-   - Key variables include `APIFY_URL` (which MUST point to a síncrono endpoint like `/run-sync-get-dataset-items` to fetch dataset arrays directly), `EVOLUTION_API_URL` and `WHATSAPP_NUMBER`.
+   - Key variables include `APIFY_URL` (LinkedIn, MUST point to a síncrono endpoint like `/run-sync-get-dataset-items`), `GLASSDOOR_APIFY_URL` (Glassdoor Apify actor), `EVOLUTION_API_URL`, `WHATSAPP_NUMBER` and `DATABASE_CONNECTION_URI` (PostgreSQL connection string).
 - **Naming Conventions:**
    - Use `camelCase` for variable and function names.
    - Use `PascalCase` for class names, components, and controllers.
@@ -80,17 +87,19 @@ Technical context, libraries, and coding guidelines:
 
 Common commands and pipeline validation tasks:
 
-- **Running Locally:** 
+- **Running Locally (one-shot):** 
   ```bash
   pnpm start:dev
   ```
-- **Local Testing:**
-  Trigger execution manually through the local API test routes:
+  This will run the full pipeline once and exit.
+- **Local Testing (manual trigger):**
   ```bash
-  curl http://localhost:3000/test-cron
+  npx ts-node src/main.ts
   ```
 - **Docker Production Deploy:**
   ```bash
   sudo docker compose up -d --build api
   ```
-- **Documentation Rule:** Any new integrations (e.g. Indeed, Glassdoor) or database changes must be immediately recorded here to preserve context for future pair programmers.
+- **Railway Cron Deploy:**
+  Push to the connected branch — Railway will build the Docker image and schedule it via `railway.json` (`cronSchedule: "0 * * * *"`).
+- **Documentation Rule:** Any new integrations (e.g. Indeed) or database changes must be immediately recorded here to preserve context for future pair programmers.

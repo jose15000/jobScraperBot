@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { BotService } from '../bot/bot.service';
 import { JobHistoryRepository } from './job-history.repository';
 import { JobDigestFormatter, ApprovedJobDto } from './job-digest.formatter';
@@ -14,7 +13,6 @@ export class TaskService {
         private readonly digestFormatter: JobDigestFormatter,
     ) { }
 
-    @Cron('0 0 8-23 * * *')
     async runScrapeJob() {
         this.logger.log('Iniciando job de scraping sequencial...');
 
@@ -45,7 +43,7 @@ export class TaskService {
                 if (!text) continue;
 
                 // 1. DEDUPLICAÇÃO: Delega a checagem ao repositório especializado
-                if (url && this.historyRepository.exists(url)) {
+                if (url && await this.historyRepository.exists(url)) {
                     this.logger.debug(`⏭️ Ignorando vaga já enviada anteriormente: ${url}`);
                     continue;
                 }
@@ -86,7 +84,7 @@ export class TaskService {
                 });
 
                 // Persiste os novos links no repositório especializado
-                this.historyRepository.save(newlySentLinks);
+                await this.historyRepository.save(newlySentLinks);
             } else {
                 this.logger.log('Nenhuma nova vaga aprovada passou pelos filtros nesta execução.');
             }
