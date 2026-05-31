@@ -1,6 +1,8 @@
 packages:
   - '.'
 
+trustLockfile: true
+
 allowBuilds:
   "@contextatlas/core": true
   "@nestjs/core": true

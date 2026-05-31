@@ -28,6 +28,7 @@ const dealbreakers = [
     'estou a procura',
     'busco recolocação',
     'procurando vaga',
+    'mais de 30 dias'
 ];
 
 // Termos que indicam que a publicação é uma oportunidade real
@@ -51,27 +52,48 @@ const hiringIndicators = [
 ];
 
 // Tecnologias desejadas
-const desiredTechs = [
-    'react',
-    'reactjs',
-    'react.js',
-    'nextjs',
-    'next.js',
-    'typescript',
-    'javascript',
-    'node',
-    'nodejs',
-    'node.js',
-    'nestjs',
-    'nest.js',
-    'frontend',
-    'front-end',
-    'front end',
-    'web',
-    'css',
-    'tailwind',
-];
+export const desiredTechs = [
+    // JavaScript ecosystem
+    'javascript', 'js', 'es6', 'es2015', 'vanilla js',
+    'typescript', 'ts',
 
+    // React
+    'react', 'reactjs', 'react.js', 'react js',
+    'next', 'nextjs', 'next.js', 'next js',
+    'react native', 'expo',
+
+    // Node / Backend JS
+    'node', 'nodejs', 'node.js', 'node js',
+    'nest', 'nestjs', 'nest.js', 'nestjs',
+    'express', 'expressjs', 'express.js',
+    'fastify', 'hono', 'elysia',
+
+    // Frontend geral
+    'frontend', 'front-end', 'front end',
+    'html', 'html5', 'css', 'css3', 'sass', 'scss',
+    'tailwind', 'tailwindcss', 'tailwind css',
+    'styled components', 'css-in-js',
+
+    // Banco de dados
+    'sql', 'mysql', 'postgresql', 'postgres', 'postegresql',
+    'mongodb', 'mongo', 'mongo db',
+    'redis', 'prisma', 'drizzle',
+    'supabase',
+
+    // Cloud / DevOps
+    'docker', 'kubernetes', 'k8s',
+    'aws', 'gcp', 'azure',
+    'vercel', 'ci/cd', 'github actions',
+
+    // IA / LLM
+    'llm', 'openai', 'anthropic', 'claude', 'langchain',
+    'n8n', 'mcp', 'ai', 'inteligência artificial',
+
+    // Metodologias / ferramentas
+    'git', 'github', 'api rest', 'rest api', 'graphql',
+    'websocket', 'webhook', 'microservices', 'microsserviços',
+    'scrum', 'kanban', 'agile',
+];
 // Níveis de senioridade buscados
 const juniorKeywords = [
     'junior',
@@ -109,10 +131,12 @@ const remoteKeywords = [
 // --- Funções auxiliares ---
 
 function matchWords(content: string, words: string[]): string[] {
+    content.toLowerCase();
     return words.filter(w => content.includes(w));
 }
 
 function matchRegex(content: string, words: string[]): string[] {
+    content.toLowerCase();
     return words.filter(w => {
         const regex = new RegExp(`\\b${w.replace('.', '\\.')}\\b`, 'i');
         return regex.test(content);

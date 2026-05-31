@@ -11,7 +11,6 @@ export class JobHistoryRepository implements OnModuleInit, OnModuleDestroy {
             connectionString: process.env.DATABASE_CONNECTION_URI,
         });
 
-        // Cria a tabela se não existir (idempotente)
         try {
             await this.pool.query(`
                 CREATE TABLE IF NOT EXISTS sent_jobs (
@@ -51,7 +50,6 @@ export class JobHistoryRepository implements OnModuleInit, OnModuleDestroy {
         if (urls.length === 0) return;
 
         try {
-            // Insere todas as URLs de uma vez, ignorando duplicatas
             const values = urls.map((_, i) => `($${i + 1})`).join(', ');
             await this.pool.query(
                 `INSERT INTO sent_jobs (url) VALUES ${values} ON CONFLICT (url) DO NOTHING`,

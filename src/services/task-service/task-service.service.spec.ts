@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TaskService } from './task-service.service';
 import { BotService } from '../bot/bot.service';
-import { JobHistoryRepository } from './job-history.repository';
+import { JobHistoryRepository } from '../../repositories/job-history.repository';
 import { JobDigestFormatter } from './job-digest.formatter';
 
 describe('TaskService', () => {

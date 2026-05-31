@@ -16,8 +16,7 @@ export class JobDigestFormatter {
         const digestTitle = `🚀 *Varredura Completa: ${sortedJobs.length} Novas Vagas Encontradas!* 🚀\n\n`;
         const digestBody = sortedJobs.map((job, index) => {
             return [
-                `*${index + 1}️⃣ Vaga Aprovada (Score: ${job.score})*`,
-                `📋 *Motivo:* ${job.reason}`,
+                `*${index + 1}️`,
                 `📝 *Resumo:* _"${job.previewText}..."_`,
                 job.url ? `🔗 *Link:* ${job.url}` : '',
                 '──────────────────'

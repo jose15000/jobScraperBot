@@ -5,7 +5,7 @@ import { ScrapserviceService } from './services/scrapservice/scrapservice.servic
 import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
 import { TaskService } from './services/task-service/task-service.service';
 import { BotService } from './services/bot/bot.service';
-import { JobHistoryRepository } from './services/task-service/job-history.repository';
+import { JobHistoryRepository } from './repositories/job-history.repository';
 import { JobDigestFormatter } from './services/task-service/job-digest.formatter';
 
 @Module({

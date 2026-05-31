@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BotService } from '../bot/bot.service';
-import { JobHistoryRepository } from './job-history.repository';
+import { JobHistoryRepository } from '../../repositories/job-history.repository';
 import { JobDigestFormatter, ApprovedJobDto } from './job-digest.formatter';
+import { ScrapedPost } from '../scrapservice/scrapservice.service';
 
 @Injectable()
 export class TaskService {
@@ -16,29 +17,37 @@ export class TaskService {
     async runScrapeJob() {
         this.logger.log('Iniciando job de scraping sequencial...');
 
-        try {
-            const posts = await this.botService.makeRequest({
-                searchQueries: ["\"vaga\" and \"react\" and \"junior\" and \"remoto\""],
-            });
 
-            if (!Array.isArray(posts)) {
-                this.logger.error(`Esperado um array de posts do Apify, mas recebido: ${typeof posts}. Verifique a URL do APIFY_URL.`);
-                return;
+        const providers = ["glassdoor"];
+        const queries = ["desenvolvedor full-stack Júnior", "desenvolvedor full-stack pleno", "desenvolvedor front-end pleno"];
+        const rawPosts: ScrapedPost[] = [];
+        for (const provider of providers) {
+            try {
+                const posts = await this.botService.makeRequest({
+                    searchQueries: queries,
+                    provider: provider
+                });
+
+                if (Array.isArray(posts) && posts.length > 0) {
+                    this.logger.log(`${posts.length} posts encontrados. Filtrando por heurística e antiduplicação...`);
+                    rawPosts.push(...posts)
+
+                } else {
+
+                    this.logger.error(`Esperado um array de posts do scraping, mas recebido: ${typeof posts}.`, posts);
+                    return;
+                }
             }
-
-            if (posts.length === 0) {
-                this.logger.log('Nenhum post encontrado nesta execução.');
-                return;
+            catch (error) {
+                this.logger.error('Erro no job de scraping:', error);
             }
-
-            this.logger.log(`${posts.length} posts encontrados. Filtrando por heurística e antiduplicação...`);
 
             const approvedJobs: ApprovedJobDto[] = [];
             const newlySentLinks: string[] = [];
 
-            for (const post of posts) {
-                const text = post.content || post.text || post.description || '';
-                const url = post.linkedinUrl || post.url || '';
+            for (const post of rawPosts) {
+                const text = post.text || '';
+                const url = post.url || '';
 
                 if (!text) continue;
 
@@ -65,7 +74,7 @@ export class TaskService {
                         newlySentLinks.push(url);
                     }
                 } else {
-                    this.logger.debug(`❌ Rejeitada: ${result.reason} — ${text.substring(0, 60)}...`);
+                    this.logger.debug(`❌ Rejeitada: ${result.reason} — ${text.substring(0, 60)}...`, url);
                 }
             }
 
@@ -88,9 +97,8 @@ export class TaskService {
             } else {
                 this.logger.log('Nenhuma nova vaga aprovada passou pelos filtros nesta execução.');
             }
-        }
-        catch (error) {
-            this.logger.error('Erro no job de scraping:', error);
+
+
         }
     }
 }
