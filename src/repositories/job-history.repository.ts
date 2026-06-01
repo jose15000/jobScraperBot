@@ -8,7 +8,7 @@ export class JobHistoryRepository implements OnModuleInit, OnModuleDestroy {
 
     async onModuleInit() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_CONNECTION_URI,
+            connectionString: process.env.DATABASE_URL || process.env.DATABASE_CONNECTION_URI,
         });
 
         try {
