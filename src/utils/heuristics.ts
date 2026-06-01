@@ -205,7 +205,7 @@ export function runJobHeuristic(content: string): FilterResult {
 
     // 6. Pontuação final
     const score = hiringScore + techScore + seniorityScore + remoteScore;
-    const shouldApply = hiringMatches.length > 0 && techMatches.length > 0 && score >= 30;
+    const shouldApply = hiringMatches.length > 0 && techMatches.length > 0 && score >= 25;
 
     let reason = 'Aprovada na filtragem heurística';
     if (!shouldApply) {
