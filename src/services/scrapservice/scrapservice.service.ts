@@ -68,7 +68,7 @@ export class ScrapserviceService {
                 switch (search.provider) {
 
                     case "glassdoor":
-                        searchUrl = `${process.env.GLASSDOOR_URL}`;
+                        searchUrl = `https://www.glassdoor.com.br/Vaga/trabalho-remoto-${encodeURIComponent(query)}-vagas-SRCH_IL.0,15_IS12226_KO16,47.htm`;
                         break;
 
                     default:
