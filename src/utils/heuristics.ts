@@ -28,7 +28,9 @@ const dealbreakers = [
     'estou a procura',
     'busco recolocação',
     'procurando vaga',
-    'mais de 30 dias'
+    'mais de 30 dias',
+    'presencial',
+    'híbrido',
 ];
 
 // Termos que indicam que a publicação é uma oportunidade real
@@ -99,11 +101,10 @@ const juniorKeywords = [
     'junior',
     'júnior',
     'jr',
-    'trainee',
-    'iniciante',
-    'sem experiência',
+    'entry',
     'pleno',
     'pl',
+    'mid'
 ];
 
 // Senioridades indesejadas

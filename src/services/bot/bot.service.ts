@@ -13,7 +13,7 @@ export class BotService {
     ) { }
 
     async makeRequest(queries: Isearch) {
-        const content = await this.scrapService.scrape(queries);
+        const content = await this.scrapService.scrape(queries)
         return content;
     }
 

@@ -63,18 +63,30 @@ export class WhatsappService {
     }
 
     async sendMessage(message: SendMessageDTO) {
+        const url = `${process.env.evolutionApiUrl}/message/sendText/${message.instanceName}`;
+        this.logger.log(`📤 Enviando mensagem para: ${url}`);
+
         try {
-            const request = await fetch(`${process.env.evolutionApiUrl}/message/sendText/${message.instanceName}`, {
+            const response = await fetch(url, {
                 method: "POST",
                 headers: {
                     'apikey': process.env.apiKey!,
                     'Content-Type': "application/json"
                 },
                 body: JSON.stringify(message)
-            })
-            return await request.json()
+            });
+
+            const body = await response.text();
+
+            if (!response.ok) {
+                this.logger.error(`❌ Erro ao enviar mensagem (${response.status}): ${body}`);
+                return;
+            }
+
+            this.logger.log(`✅ Mensagem enviada com sucesso!`);
+            return JSON.parse(body);
         } catch (error: any) {
-            this.logger.log(error.message)
+            this.logger.error(`❌ Fetch falhou: ${error.message}`, error.stack);
         }
     }
 }

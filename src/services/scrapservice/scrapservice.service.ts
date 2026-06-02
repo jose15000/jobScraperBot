@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
-import { Isearch } from 'src/interfaces/isearch/isearch.interface';
+import { Isearch, IProviderConfig } from 'src/interfaces/isearch/isearch.interface';
 import * as cheerio from 'cheerio';
-import { desiredTechs } from 'src/utils/heuristics';
 
 export interface ScrapedPost {
     text: string;
@@ -13,7 +12,6 @@ export interface ScrapedPost {
     location?: string;
     link?: string;
 }
-
 
 @Injectable()
 export class ScrapserviceService {
@@ -56,46 +54,26 @@ export class ScrapserviceService {
     }
 
     async scrape(search: Isearch): Promise<ScrapedPost[]> {
-
         const { browser, page } = await this.startBrowser();
-
         const allJobs: ScrapedPost[] = [];
 
         try {
             for (const query of search.searchQueries) {
-                let searchUrl = '';
-
-                switch (search.provider) {
-
-                    case "glassdoor":
-                        searchUrl = `https://www.glassdoor.com.br/Vaga/trabalho-remoto-${encodeURIComponent(query)}-vagas-SRCH_IL.0,15_IS12226_KO16,47.htm`;
-                        break;
-
-                    default:
-                        this.logger.warn(`Provider desconhecido: ${search.provider}`);
-                        continue;
-                }
+                const searchUrl = search.provider.buildSearchUrl(query);
                 this.logger.log(`Navegando para: ${searchUrl}`);
+
                 await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
                 try {
-
-                    if (search.provider === 'glassdoor') {
-
-                        await page.waitForSelector('article, [data-test="jobListing"]', { timeout: 30000 });
-                    }
+                    await page.waitForSelector(search.provider.selectors.waitSelector, { timeout: 30000 });
                 } catch (e) {
                     this.logger.warn(`Aviso: Elemento principal não apareceu a tempo para a query: ${query}`);
                 }
+
                 await page.waitForTimeout(Math.floor(Math.random() * 2000) + 1000);
 
                 const html = await page.content();
-
-                let jobs: ScrapedPost[] = [];
-                if (search.provider === "glassdoor") {
-                    jobs = this.parseGlassdoorJobsHtml(html);
-                }
-
+                const jobs = this.ParseHtml(html, search.provider);
                 allJobs.push(...jobs);
             }
         } catch (error) {
@@ -108,20 +86,23 @@ export class ScrapserviceService {
         return allJobs;
     }
 
-    private parseGlassdoorJobsHtml(html: string): ScrapedPost[] {
+    private ParseHtml(html: string, provider: IProviderConfig): ScrapedPost[] {
         const $ = cheerio.load(html);
         const jobs: ScrapedPost[] = [];
+        const { selectors } = provider;
 
-        $('[data-test="jobListing"]').each((i, element) => {
-            const jobTitle = $(element).find('[data-test="job-title"]').text().trim();
-            const companyName = $(element).find('[class*="EmployerProfile"]').first().text().trim();
+        $(selectors.container).each((i, element) => {
+            const jobTitle = $(element).find(selectors.jobTitle).text().trim();
+            const companyName = $(element).find(selectors.companyName).first().text().trim();
 
             const postText = `Vaga: ${jobTitle} | Empresa: ${companyName}`;
 
-            let postUrl = $(element).find('a[data-test="job-title"]').attr('href') || '';
+            let postUrl = $(element).find(selectors.jobLink).attr('href') || '';
 
             if (postUrl && !postUrl.startsWith('http')) {
-                postUrl = `https://www.glassdoor.com.br${postUrl}`;
+                const cleanBaseUrl = selectors.baseUrl.endsWith('/') ? selectors.baseUrl.slice(0, -1) : selectors.baseUrl;
+                const cleanPostUrl = postUrl.startsWith('/') ? postUrl : `/${postUrl}`;
+                postUrl = `${cleanBaseUrl}${cleanPostUrl}`;
             }
 
             if (jobTitle) {
@@ -130,5 +111,49 @@ export class ScrapserviceService {
         });
 
         return jobs;
+    }
+
+    async scrapeLinkedinPosts(query: string[]): Promise<ScrapedPost[]> {
+        try {
+            this.logger.log(`Executando Apify Actor em modo síncrono. Aguardando resultados de ${query.length} queries...`);
+
+            const request = await fetch(`${process.env.APIFY_URL!}`, {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "maxPosts": 20,
+                    "maxReactions": 5,
+                    "postNestedComments": false,
+                    "postNestedReactions": false,
+                    "postedLimit": "24h",
+                    "scrapeComments": false,
+                    "scrapeReactions": false,
+                    "searchQueries": query,
+                    "sortBy": "date"
+                })
+            });
+
+            if (!request.ok) {
+                const errText = await request.text();
+                this.logger.error(`Erro no Apify API (${request.status}): ${errText}`);
+                throw new Error(`Apify error: ${request.statusText}`);
+            }
+
+            const response = await request.json();
+
+            if (Array.isArray(response)) {
+                return response.map((item: any) => ({
+                    text: item.content || '',
+                    url: item.linkedinUrl || '',
+                    company: item.author?.name || '',
+                    title: 'Vaga via LinkedIn Post'
+                }));
+            }
+
+            return [];
+        } catch (error: any) {
+            this.logger.error(`Erro ao buscar posts do LinkedIn: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 }
