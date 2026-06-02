@@ -26,4 +26,18 @@ export const linkedinProvider: IProviderConfig = {
         waitSelector: 'li',
         baseUrl: 'https://www.linkedin.com',
     },
+
 };
+export const remotarProvider: IProviderConfig = {
+    name: 'remotar',
+    buildSearchUrl: (query: string) => `https://remotar.com.br/search/jobs?q=${encodeURIComponent(query)}&c=13&t=4&t=17&t=21`,
+
+    selectors: {
+        container: '[class="box-content"]',
+        jobTitle: 'a.job-title',
+        companyName: 'a.company',
+        jobLink: 'a.job-title',
+        waitSelector: 'main',
+        baseUrl: 'https://remotar.com.br'
+    }
+}

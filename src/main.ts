@@ -12,7 +12,7 @@ async function bootstrap() {
     logger.log('🚀 Container iniciado — executando pipeline de scraping...');
     const taskService = app.get(TaskService);
     await taskService.runScrapeJob();
-    await taskService.getLinkedinPosts();
+    // await taskService.getLinkedinPosts();
   } catch (error) {
     logger.error('❌ Erro fatal no pipeline:', error);
     process.exit(1);

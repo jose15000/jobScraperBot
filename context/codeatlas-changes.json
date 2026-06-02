@@ -1,0 +1,86 @@
+{
+  "nodes": [
+    {
+      "graphType": "Code",
+      "id": "59468fbf-6be7-48ef-907b-0df1ea9d9116",
+      "type": "code_change",
+      "data": {
+        "file": "/home/jooj/Documents/projects/jobsearchbot/src/services/task-service/task-service.service.ts",
+        "agentThought": "fix",
+        "description": "Refatoração do TaskService para seguir o Single Responsibility Principle (SRP), dividindo o scraping em scrapeWebProviders (Playwright) e scrapeLinkedinFeed (Apify), e unificando o processamento de posts brutos.",
+        "timestamp": "2026-06-02T18:34:48.533Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "0aa5ad65-864f-4d87-b718-2f1ff7bb68bf",
+      "type": "code_change",
+      "data": {
+        "file": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+        "agentThought": "fix",
+        "description": "Ajuste no método scrapeLinkedinPosts para mapear o retorno bruto da API do Apify (content, linkedinUrl) para o formato esperado ScrapedPost (text, url).",
+        "timestamp": "2026-06-02T18:34:48.533Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "63959d89-b357-4186-bd0c-47e4c79cecfe",
+      "type": "code_change",
+      "data": {
+        "file": "/home/jooj/Documents/projects/jobsearchbot/src/utils/heuristics.ts",
+        "agentThought": "decision",
+        "description": "Otimização de filtros heurísticos para incluir senioridade Pleno (pl, mid) e filtrar termos indesejados (presencial, híbrido).",
+        "timestamp": "2026-06-02T18:34:48.533Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "6c5d4536-5c14-49c1-a213-8e3f38f656b7",
+      "type": "code_change",
+      "data": {
+        "file": "/home/jooj/Documents/projects/jobsearchbot/src/config/providers.ts",
+        "agentThought": "decision",
+        "description": "Adição dos seletores CSS corretos e configuração de parâmetros de busca no remotarProvider para suportar a busca de vagas na plataforma Remotar.",
+        "timestamp": "2026-06-02T18:47:01.420Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "dfee516f-c843-49db-9871-a09023bac28f",
+      "type": "code_change",
+      "data": {
+        "file": "/home/jooj/Documents/projects/jobsearchbot/src/services/task-service/task-service.service.ts",
+        "agentThought": "test",
+        "description": "Atualização dos providers em scrapeWebProviders para focar e testar a busca de vagas via Remotar (remotarProvider).",
+        "timestamp": "2026-06-02T18:47:01.421Z"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "59468fbf-6be7-48ef-907b-0df1ea9d9116",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/task-service/task-service.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "0aa5ad65-864f-4d87-b718-2f1ff7bb68bf",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/scrapservice/scrapservice.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "63959d89-b357-4186-bd0c-47e4c79cecfe",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/utils/heuristics.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "6c5d4536-5c14-49c1-a213-8e3f38f656b7",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/config/providers.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "dfee516f-c843-49db-9871-a09023bac28f",
+      "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/task-service/task-service.service.ts",
+      "type": "MODIFIES"
+    }
+  ]
+}
