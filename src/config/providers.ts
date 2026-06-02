@@ -41,3 +41,17 @@ export const remotarProvider: IProviderConfig = {
         baseUrl: 'https://remotar.com.br'
     }
 }
+
+export const indeedProvider: IProviderConfig = {
+    name: 'indeed',
+    buildSearchUrl: (query: string) => `https://br.indeed.com/jobs?q=${encodeURIComponent(query)}&l=remoto&fromage=1&radius=25&from=searchOnDesktopSerp&vjk=2a277c15c3855bf7`,
+
+    selectors: {
+        container: '[data-testid="slider_item"]',
+        jobTitle: 'h3.jobTitle',
+        companyName: 'span.title',
+        jobLink: 'a.href',
+        waitSelector: 'li',
+        baseUrl: 'https://br.indeed.com'
+    }
+}

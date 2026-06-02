@@ -3,7 +3,7 @@ import { BotService } from '../bot/bot.service';
 import { JobHistoryRepository } from '../../repositories/job-history.repository';
 import { JobDigestFormatter, ApprovedJobDto } from './job-digest.formatter';
 import { ScrapedPost, ScrapserviceService } from '../scrapservice/scrapservice.service';
-import { glassdoorProvider, linkedinProvider, remotarProvider } from '../../config/providers';
+import { glassdoorProvider, indeedProvider, linkedinProvider, remotarProvider } from '../../config/providers';
 
 @Injectable()
 export class TaskService {
@@ -92,7 +92,7 @@ export class TaskService {
     }
 
     private async scrapeWebProviders(queries: string[]): Promise<ScrapedPost[]> {
-        const providers = [remotarProvider];
+        const providers = [indeedProvider, glassdoorProvider, linkedinProvider, remotarProvider];
         const results: ScrapedPost[] = [];
 
         for (const providerConfig of providers) {
