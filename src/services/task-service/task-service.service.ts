@@ -9,7 +9,6 @@ import { glassdoorProvider, indeedProvider, linkedinProvider, remotarProvider } 
 export class TaskService {
     private readonly logger = new Logger(TaskService.name);
 
-
     constructor(
         private readonly botService: BotService,
         private readonly historyRepository: JobHistoryRepository,
@@ -38,6 +37,7 @@ export class TaskService {
 
         const approvedJobs: ApprovedJobDto[] = [];
         const newlySentLinks: string[] = [];
+        const seenLinks = new Set<string>();
 
         // 3. Processamento, Deduplicação e Heurística de todas as vagas de uma vez
         for (const post of rawPosts) {
@@ -46,6 +46,13 @@ export class TaskService {
 
             if (!text) continue;
 
+            if (url) {
+                if (seenLinks.has(url)) {
+                    this.logger.debug(`essa vaga já está na lista: ${url}`);
+                    continue;
+                }
+                seenLinks.add(url);
+            }
             // Deduplicação
             if (url && await this.historyRepository.exists(url)) {
                 this.logger.debug(`⏭️ Ignorando vaga já enviada anteriormente: ${url}`);
@@ -57,7 +64,6 @@ export class TaskService {
 
             if (result.shouldApply) {
                 this.logger.log(`✅ Vaga aprovada (score: ${result.score}): ${text.substring(0, 80)}...`);
-
                 approvedJobs.push({
                     score: result.score,
                     reason: result.reason,
@@ -94,7 +100,7 @@ export class TaskService {
     private async scrapeWebProviders(queries: string[]): Promise<ScrapedPost[]> {
         const providers = [indeedProvider, glassdoorProvider, linkedinProvider, remotarProvider];
         const results: ScrapedPost[] = [];
-
+        const seenLinks = new Set<string>();
         for (const providerConfig of providers) {
             try {
                 this.logger.log(`Iniciando scraping do provider: ${providerConfig.name}`);
@@ -114,11 +120,13 @@ export class TaskService {
             }
         }
 
+
         return results;
     }
 
     private async scrapeLinkedinFeed(queries: string[]): Promise<ScrapedPost[]> {
         try {
+
             this.logger.log('Iniciando busca de posts informais no LinkedIn via Apify...');
             const posts = await this.scrapeLinkedinPosts.scrapeLinkedinPosts(queries);
 
