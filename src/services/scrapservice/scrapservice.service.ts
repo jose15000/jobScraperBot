@@ -121,15 +121,14 @@ export class ScrapserviceService {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    "maxPosts": 20,
-                    "maxReactions": 5,
-                    "postNestedComments": false,
-                    "postNestedReactions": false,
-                    "postedLimit": "24h",
-                    "scrapeComments": false,
-                    "scrapeReactions": false,
-                    "searchQueries": query,
-                    "sortBy": "date"
+                    maxPosts: 20,
+                    postNestedComments: false,
+                    postNestedReactions: false,
+                    postedLimit: "24h",
+                    scrapeComments: false,
+                    scrapeReactions: false,
+                    searchQueries: query,
+                    sortBy: "date"
                 })
             });
 

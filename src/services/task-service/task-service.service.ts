@@ -19,11 +19,7 @@ export class TaskService {
     async runScrapeJob() {
         const queries = ["desenvolvedor full-stack Júnior", "desenvolvedor full-stack pleno", "desenvolvedor front-end pleno"];
         const postQueries = [
-            'vaga (junior OR jr OR pleno OR pl) "react" (remoto OR "home office") -senior -sênior -lead',
-            'vaga (junior OR jr OR pleno OR pl) "node" (remoto OR "home office") -senior -sênior -lead',
-            'vaga (junior OR jr OR pleno OR pl) "typescript" (remoto OR "home office") -senior -sênior -lead',
-            'vaga (junior OR jr OR pleno OR pl) "nestjs" (remoto OR "home office") -senior -sênior -lead',
-            'vaga (junior OR jr OR pleno OR pl) "fullstack" (remoto OR "home office") -senior -sênior -lead'
+            '"vaga" AND "desenvolvedor" AND "fullstack" AND ("junior" OR "pleno") AND "remoto"',
         ];
 
         this.logger.log('🚀 Iniciando pipeline consolidado de busca de vagas...');
