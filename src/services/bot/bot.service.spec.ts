@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BotService } from './bot.service';
-import { ScrapserviceService } from '../scrapservice/scrapservice.service';
+import { ScrapserviceService } from '../playWrightService/scrapservice.service';
 import { WhatsappService } from '../whatsapp-service/whatsapp-service.service';
 
 describe('BotService', () => {

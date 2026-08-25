@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ScrapserviceService } from './services/scrapservice/scrapservice.service';
+import { ScrapserviceService } from './services/playWrightService/scrapservice.service';
 import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
 import { TaskService } from './services/task-service/task-service.service';
 import type { CreateInstanceDto } from './interfaces/ICreateInstanceDTO/icreateinstancedto.interface';
@@ -83,11 +83,15 @@ describe('AppController', () => {
   describe('connectInstance', () => {
     it('should connect a WhatsApp instance', async () => {
       const instanceName = 'test-instance';
-      whatsappService.connectInstance.mockResolvedValue({ base64: 'qr-code-data' });
+      whatsappService.connectInstance.mockResolvedValue({
+        base64: 'qr-code-data',
+      });
 
       const result = await appController.connect(instanceName);
 
-      expect(whatsappService.connectInstance).toHaveBeenCalledWith(instanceName);
+      expect(whatsappService.connectInstance).toHaveBeenCalledWith(
+        instanceName,
+      );
       expect(result).toEqual({ base64: 'qr-code-data' });
     });
   });
@@ -99,7 +103,7 @@ describe('AppController', () => {
         number: '5511999999999',
         text: 'Hello from test',
         instanceName: 'test-instance',
-        delay: 1000
+        delay: 1000,
       };
       whatsappService.sendMessage.mockResolvedValue({ message: 'Sent' });
 

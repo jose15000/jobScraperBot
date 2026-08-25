@@ -1,26 +1,25 @@
-
 export interface IProviderSelectors {
-    container: string;
-    jobTitle: string;
-    companyName: string;
-    jobLink: string;
-    waitSelector: string;
-    baseUrl: string;
+  container: string;
+  jobTitle: string;
+  companyName: string;
+  jobLink: string;
+  waitSelector: string;
+  baseUrl: string;
 }
 
 export interface IProviderConfig {
+  name: string;
 
-    name: string;
+  buildSearchUrl: (query: string, location: string) => string;
 
-    buildSearchUrl: (query: string) => string;
+  isLinkedinPosts?: boolean;
 
-    isLinkedinPosts?: boolean
-
-    selectors: IProviderSelectors;
+  selectors: IProviderSelectors;
 }
 
 export interface Isearch {
-    provider: IProviderConfig;
-    searchQueries: string[];
-    sortBy?: "relevance" | "date";
+  provider: IProviderConfig;
+  searchQueries: string[];
+  location?: string[];
+  sortBy?: 'relevance' | 'date';
 }

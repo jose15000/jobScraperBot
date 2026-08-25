@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { TaskService } from './services/task-service/task-service.service';
 import { Logger } from '@nestjs/common';
+import { PlaywrightService } from './services/playWrightService/scrapservice.service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
