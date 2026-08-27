@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BotService } from './bot.service';
-import { ScrapserviceService } from '../playWrightService/scrapservice.service';
+import { PlaywrightService } from '../playWrightService/scrapservice.service';
 import { WhatsappService } from '../whatsapp-service/whatsapp-service.service';
 
 describe('BotService', () => {
@@ -18,7 +18,7 @@ describe('BotService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BotService,
-        { provide: ScrapserviceService, useValue: mockScrapService },
+        { provide: PlaywrightService, useValue: mockScrapService },
         { provide: WhatsappService, useValue: mockWhatsappService },
       ],
     }).compile();

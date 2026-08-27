@@ -54,6 +54,39 @@
         "description": "Atualização dos providers em scrapeWebProviders para focar e testar a busca de vagas via Remotar (remotarProvider).",
         "timestamp": "2026-06-02T18:47:01.421Z"
       }
+    },
+    {
+      "graphType": "Code",
+      "id": "a1143cb3-ca6b-4f6e-8c51-9900deedd283",
+      "type": "code_change",
+      "data": {
+        "file": "src/interfaces/isearch/isearch.interface.ts",
+        "agentThought": "decision",
+        "description": "Added WorkplaceType and ILocationOption interfaces, and updated Isearch to support locations and location properties",
+        "timestamp": "2026-08-27T23:01:31.039Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "3336b7b0-923e-4e31-b126-9dd0c33741aa",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/playWrightService/scrapservice.service.ts",
+        "agentThought": "fix",
+        "description": "Refactored PlaywrightService scrape method to execute queries and locations in parallel tabs (Promise.all), filter non-remote location combinations, and allow stylesheet loading for proper hydration",
+        "timestamp": "2026-08-27T23:01:33.624Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "64a2bc59-562f-4041-b5e0-ef03a3ebafad",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/task-service/task-service.service.ts",
+        "agentThought": "decision",
+        "description": "Updated TaskService to configure structured ILocationOption list for Remote (Brasil) and Curitiba (Presencial/Hibrido) searches",
+        "timestamp": "2026-08-27T23:01:36.021Z"
+      }
     }
   ],
   "edges": [
@@ -80,6 +113,21 @@
     {
       "from": "dfee516f-c843-49db-9871-a09023bac28f",
       "to": "/home/jooj/Documents/projects/jobsearchbot/src/services/task-service/task-service.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "a1143cb3-ca6b-4f6e-8c51-9900deedd283",
+      "to": "src/interfaces/isearch/isearch.interface.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "3336b7b0-923e-4e31-b126-9dd0c33741aa",
+      "to": "src/services/playWrightService/scrapservice.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "64a2bc59-562f-4041-b5e0-ef03a3ebafad",
+      "to": "src/services/task-service/task-service.service.ts",
       "type": "MODIFIES"
     }
   ]

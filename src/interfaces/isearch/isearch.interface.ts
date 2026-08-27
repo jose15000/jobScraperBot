@@ -1,3 +1,12 @@
+export type WorkplaceType = 'remote' | 'onsite' | 'hybrid';
+
+export interface ILocationOption {
+  label: string;
+  workplaceTypes: WorkplaceType[];
+  locationQuery?: string;
+  providerParams?: Record<string, string>;
+}
+
 export interface IProviderSelectors {
   container: string;
   jobTitle: string;
@@ -9,17 +18,15 @@ export interface IProviderSelectors {
 
 export interface IProviderConfig {
   name: string;
-
-  buildSearchUrl: (query: string, location: string) => string;
-
+  buildSearchUrl: (query: string, location?: any) => string;
   isLinkedinPosts?: boolean;
-
   selectors: IProviderSelectors;
 }
 
 export interface Isearch {
   provider: IProviderConfig;
   searchQueries: string[];
-  location?: string[];
+  locations: ILocationOption[];
+  location?: ILocationOption[] | any[];
   sortBy?: 'relevance' | 'date';
 }

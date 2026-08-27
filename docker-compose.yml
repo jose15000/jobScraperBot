@@ -12,6 +12,7 @@ services:
       - .env
     environment:
       - PORT=3000
+      - DATABASE_URL=postgresql://postgres:PASSWORD@postgres:5432/postgres
     restart: always
     networks:
       - evolution-net

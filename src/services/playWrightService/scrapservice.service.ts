@@ -53,38 +53,77 @@ export class PlaywrightService {
   }
 
   async scrape(search: Isearch): Promise<ScrapedPost[]> {
-    const { browser, page } = await this.startBrowser();
+    const { browser, context } = await this.startBrowser();
     const allJobs: ScrapedPost[] = [];
 
-    try {
-      for (const query of search.searchQueries) {
+    const targetLocations = search.locations || search.location || [];
+    const tasks: { query: string; locOption: any }[] = [];
 
-        for (const locations of search.location!) {
-
-          const searchUrl = search.provider.buildSearchUrl(query, locations);
-          this.logger.log(`Navegando para: ${searchUrl}`);
-
-          await page.goto(searchUrl, {
-            waitUntil: 'domcontentloaded',
-            timeout: 60000,
-          });
-
-          try {
-            await page.waitForSelector(search.provider.selectors.waitSelector, {
-              timeout: 30000,
-            });
-          } catch (e) {
-            this.logger.warn(
-              `Aviso: Elemento principal não apareceu a tempo para a query: ${query}`,
-            );
-          }
-
-          await page.waitForTimeout(Math.floor(Math.random() * 2000) + 1000);
-
-          const html = await page.content();
-          const jobs = this.ParseHtml(html, search.provider);
-          allJobs.push(...jobs);
+    for (const query of search.searchQueries) {
+      for (const locOption of targetLocations) {
+        // Ignora buscas presenciais/híbridas em plataformas exclusivas de vagas remotas
+        if (
+          search.provider.name === 'remotar' &&
+          !locOption.workplaceTypes?.includes('remote')
+        ) {
+          continue;
         }
+        tasks.push({ query, locOption });
+      }
+    }
+
+    try {
+      // Executa as requisições em abas concorrentes em paralelo
+      const pageResults = await Promise.all(
+        tasks.map(async ({ query, locOption }) => {
+          const page = await context.newPage();
+          try {
+            await page.route('**/*', (route) => {
+              const resourceType = route.request().resourceType();
+              if (['image', 'media', 'font'].includes(resourceType)) {
+                route.abort();
+              } else {
+                route.continue();
+              }
+            });
+
+            const searchUrl = search.provider.buildSearchUrl(query, locOption);
+            this.logger.log(
+              `[${search.provider.name}] (${locOption.label || 'Busca'}) Navegando para: ${searchUrl}`,
+            );
+
+            await page.goto(searchUrl, {
+              waitUntil: 'domcontentloaded',
+              timeout: 45000,
+            });
+
+            try {
+              await page.waitForSelector(
+                search.provider.selectors.waitSelector,
+                { timeout: 15000 },
+              );
+            } catch (e) {
+              this.logger.warn(
+                `Aviso: Seletor '${search.provider.selectors.waitSelector}' não apareceu a tempo para [${search.provider.name} | ${query} | ${locOption.label || 'Busca'}]`,
+              );
+            }
+
+            const html = await page.content();
+            return this.ParseHtml(html, search.provider);
+          } catch (err) {
+            this.logger.error(
+              `Erro no scrape da combinação [${search.provider.name} | ${query}]:`,
+              err,
+            );
+            return [];
+          } finally {
+            await page.close();
+          }
+        }),
+      );
+
+      for (const jobs of pageResults) {
+        allJobs.push(...jobs);
       }
     } catch (error) {
       this.logger.error('Erro crítico no processo de scrape:', error);

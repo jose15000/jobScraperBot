@@ -9,7 +9,7 @@ import {
 } from '../../config/providers';
 import { LinkedinApifyService } from '../Linkedin/linkedin-apify.service';
 import { ScrapedPost } from 'src/interfaces/ScrapedPost/iscrapedpost.interface';
-import { IProviderConfig } from 'src/interfaces/isearch/isearch.interface';
+import { IProviderConfig, ILocationOption } from 'src/interfaces/isearch/isearch.interface';
 
 @Injectable()
 export class TaskService {
@@ -29,12 +29,22 @@ export class TaskService {
       'desenvolvedor front-end pleno',
     ];
 
-    const locationMap = {
-      "glassdoor": "2387909",
-      "linkedin": "103501557",
-    }
-
-    const locations = [locationMap.glassdoor, locationMap.linkedin];
+    const locations: ILocationOption[] = [
+      {
+        label: 'Remoto (Brasil)',
+        workplaceTypes: ['remote'],
+        locationQuery: 'trabalho-remoto',
+      },
+      {
+        label: 'Curitiba (Presencial/Híbrido)',
+        workplaceTypes: ['onsite', 'hybrid'],
+        locationQuery: 'curitiba-brasil',
+        providerParams: {
+          glassdoorLocationId: '2387909',
+          linkedinGeoId: '103501557',
+        },
+      },
+    ];
 
     this.logger.log('🚀 Iniciando pipeline consolidado de busca de vagas...');
     const webScrapedPosts = await this.scrapeWebProviders(queries, locations);
@@ -121,7 +131,10 @@ export class TaskService {
     }
   }
 
-  private async scrapeWebProviders(queries: string[], locations: string[]): Promise<ScrapedPost[]> {
+  private async scrapeWebProviders(
+    queries: string[],
+    locations: ILocationOption[],
+  ): Promise<ScrapedPost[]> {
     const providers = [
       glassdoorProvider,
       linkedinProvider,
@@ -136,7 +149,7 @@ export class TaskService {
         );
         const posts = await this.botService.makeRequest({
           searchQueries: queries,
-          location: locations,
+          locations: locations,
           provider: providerConfig,
         });
 

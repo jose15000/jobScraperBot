@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "contextatlas": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@contextatlas/core@latest",
+        "mcp-atlas"
+      ]
+    }
+  }
+}

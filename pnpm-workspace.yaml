@@ -6,6 +6,7 @@ trustLockfile: true
 allowBuilds:
   "@contextatlas/core": true
   "@nestjs/core": true
+  koffi: true
   onnxruntime-node: true
   protobufjs: true
   sharp: true

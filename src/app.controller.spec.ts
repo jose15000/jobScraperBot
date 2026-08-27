@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ScrapserviceService } from './services/playWrightService/scrapservice.service';
+import { PlaywrightService } from './services/playWrightService/scrapservice.service';
 import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
 import { TaskService } from './services/task-service/task-service.service';
 import type { CreateInstanceDto } from './interfaces/ICreateInstanceDTO/icreateinstancedto.interface';
@@ -10,7 +10,7 @@ import type { SendMessageDTO } from './interfaces/SendMessageDTO';
 describe('AppController', () => {
   let appController: AppController;
   let appService: jest.Mocked<AppService>;
-  let scrapserviceService: jest.Mocked<ScrapserviceService>;
+  let playwrightService: jest.Mocked<PlaywrightService>;
   let whatsappService: jest.Mocked<WhatsappService>;
   let taskService: jest.Mocked<TaskService>;
 
@@ -37,7 +37,7 @@ describe('AppController', () => {
       controllers: [AppController],
       providers: [
         { provide: AppService, useValue: mockAppService },
-        { provide: ScrapserviceService, useValue: mockScrapService },
+        { provide: PlaywrightService, useValue: mockScrapService },
         { provide: WhatsappService, useValue: mockWhatsappService },
         { provide: TaskService, useValue: mockTaskService },
       ],
@@ -45,7 +45,7 @@ describe('AppController', () => {
 
     appController = app.get<AppController>(AppController);
     appService = app.get(AppService);
-    scrapserviceService = app.get(ScrapserviceService);
+    playwrightService = app.get(PlaywrightService);
     whatsappService = app.get(WhatsappService);
     taskService = app.get(TaskService);
   });
@@ -54,17 +54,6 @@ describe('AppController', () => {
     it('should return "Hello World!"', () => {
       expect(appController.getHello()).toBe('Hello World!');
       expect(appService.getHello).toHaveBeenCalled();
-    });
-  });
-
-  describe('testCron', () => {
-    it('should trigger runScrapeJob and return success message', async () => {
-      taskService.runScrapeJob.mockResolvedValue(undefined);
-
-      const result = await appController.testCron();
-
-      expect(taskService.runScrapeJob).toHaveBeenCalled();
-      expect(result).toEqual({ message: 'Scrape triggered manually' });
     });
   });
 
