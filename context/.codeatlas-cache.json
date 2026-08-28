@@ -2,15 +2,6 @@
   "nodes": [
     {
       "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/context/contextatlas.client.ts",
-      "type": "file",
-      "data": {
-        "path": "/home/jooj/Documentos/projects/jobScraperBot/context/contextatlas.client.ts",
-        "name": "contextatlas.client.ts"
-      }
-    },
-    {
-      "graphType": "Code",
       "id": "/home/jooj/Documentos/projects/jobScraperBot/src/app.controller.ts",
       "type": "file",
       "data": {
@@ -138,39 +129,6 @@
     },
     {
       "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
-      "type": "file",
-      "data": {
-        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
-        "name": "providers.ts"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#glassdoorProvider.buildSearchUrl",
-      "type": "function",
-      "data": {
-        "name": "glassdoorProvider.buildSearchUrl"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#linkedinProvider.buildSearchUrl",
-      "type": "function",
-      "data": {
-        "name": "linkedinProvider.buildSearchUrl"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#remotarProvider.buildSearchUrl",
-      "type": "function",
-      "data": {
-        "name": "remotarProvider.buildSearchUrl"
-      }
-    },
-    {
-      "graphType": "Code",
       "id": "/home/jooj/Documentos/projects/jobScraperBot/src/repositories/job-history.repository.ts",
       "type": "file",
       "data": {
@@ -286,47 +244,6 @@
     },
     {
       "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-      "type": "file",
-      "data": {
-        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-        "name": "isearch.interface.ts"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#ILocationOption",
-      "type": "interface",
-      "data": {
-        "name": "ILocationOption"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderSelectors",
-      "type": "interface",
-      "data": {
-        "name": "IProviderSelectors"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderConfig",
-      "type": "interface",
-      "data": {
-        "name": "IProviderConfig"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#Isearch",
-      "type": "interface",
-      "data": {
-        "name": "Isearch"
-      }
-    },
-    {
-      "graphType": "Code",
       "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ScrapedPost/iscrapedpost.interface.ts",
       "type": "file",
       "data": {
@@ -435,53 +352,6 @@
     },
     {
       "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts",
-      "type": "file",
-      "data": {
-        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts",
-        "name": "scrapservice.service.ts"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService",
-      "type": "class",
-      "data": {
-        "name": "PlaywrightService"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService.startBrowser",
-      "type": "method",
-      "data": {
-        "name": "PlaywrightService.startBrowser",
-        "className": "PlaywrightService",
-        "methodName": "startBrowser"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService.scrape",
-      "type": "method",
-      "data": {
-        "name": "PlaywrightService.scrape",
-        "className": "PlaywrightService",
-        "methodName": "scrape"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService.ParseHtml",
-      "type": "method",
-      "data": {
-        "name": "PlaywrightService.ParseHtml",
-        "className": "PlaywrightService",
-        "methodName": "ParseHtml"
-      }
-    },
-    {
-      "graphType": "Code",
       "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
       "type": "file",
       "data": {
@@ -513,53 +383,6 @@
       "type": "interface",
       "data": {
         "name": "ApprovedJobDto"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts",
-      "type": "file",
-      "data": {
-        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts",
-        "name": "task-service.service.ts"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService",
-      "type": "class",
-      "data": {
-        "name": "TaskService"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService.runScrapeJob",
-      "type": "method",
-      "data": {
-        "name": "TaskService.runScrapeJob",
-        "className": "TaskService",
-        "methodName": "runScrapeJob"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService.scrapeWebProviders",
-      "type": "method",
-      "data": {
-        "name": "TaskService.scrapeWebProviders",
-        "className": "TaskService",
-        "methodName": "scrapeWebProviders"
-      }
-    },
-    {
-      "graphType": "Code",
-      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService.scrapeLinkedinFeed",
-      "type": "method",
-      "data": {
-        "name": "TaskService.scrapeLinkedinFeed",
-        "className": "TaskService",
-        "methodName": "scrapeLinkedinFeed"
       }
     },
     {
@@ -608,14 +431,177 @@
         "className": "WhatsappService",
         "methodName": "sendMessage"
       }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
+        "name": "providers.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#glassdoorProvider.buildSearchUrl",
+      "type": "function",
+      "data": {
+        "name": "glassdoorProvider.buildSearchUrl"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#linkedinProvider.buildSearchUrl",
+      "type": "function",
+      "data": {
+        "name": "linkedinProvider.buildSearchUrl"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#remotarProvider.buildSearchUrl",
+      "type": "function",
+      "data": {
+        "name": "remotarProvider.buildSearchUrl"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+        "name": "isearch.interface.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#ILocationOption",
+      "type": "interface",
+      "data": {
+        "name": "ILocationOption"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderSelectors",
+      "type": "interface",
+      "data": {
+        "name": "IProviderSelectors"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderConfig",
+      "type": "interface",
+      "data": {
+        "name": "IProviderConfig"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#Isearch",
+      "type": "interface",
+      "data": {
+        "name": "Isearch"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts",
+        "name": "scrapservice.service.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService",
+      "type": "class",
+      "data": {
+        "name": "PlaywrightService"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService.startBrowser",
+      "type": "method",
+      "data": {
+        "name": "PlaywrightService.startBrowser",
+        "className": "PlaywrightService",
+        "methodName": "startBrowser"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService.scrape",
+      "type": "method",
+      "data": {
+        "name": "PlaywrightService.scrape",
+        "className": "PlaywrightService",
+        "methodName": "scrape"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService.ParseHtml",
+      "type": "method",
+      "data": {
+        "name": "PlaywrightService.ParseHtml",
+        "className": "PlaywrightService",
+        "methodName": "ParseHtml"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts",
+      "type": "file",
+      "data": {
+        "path": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts",
+        "name": "task-service.service.ts"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService",
+      "type": "class",
+      "data": {
+        "name": "TaskService"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService.runScrapeJob",
+      "type": "method",
+      "data": {
+        "name": "TaskService.runScrapeJob",
+        "className": "TaskService",
+        "methodName": "runScrapeJob"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService.scrapeWebProviders",
+      "type": "method",
+      "data": {
+        "name": "TaskService.scrapeWebProviders",
+        "className": "TaskService",
+        "methodName": "scrapeWebProviders"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts#TaskService.scrapeLinkedinFeed",
+      "type": "method",
+      "data": {
+        "name": "TaskService.scrapeLinkedinFeed",
+        "className": "TaskService",
+        "methodName": "scrapeLinkedinFeed"
+      }
     }
   ],
   "edges": [
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/context/contextatlas.client.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/node_modules/.pnpm/@contextatlas+core@1.1.0_@sinclair+typebox@0.34.49_exact-mirror@1.0.0_file-type@21.3.4__66ef344107793874b802c85f50956d20/node_modules/@contextatlas/core/dist/index.d.ts",
-      "type": "IMPORTS"
-    },
     {
       "from": "/home/jooj/Documentos/projects/jobScraperBot/src/app.controller.ts",
       "to": "/home/jooj/Documentos/projects/jobScraperBot/src/app.controller.ts#AppController",
@@ -827,26 +813,6 @@
       "type": "IMPORTS"
     },
     {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#glassdoorProvider.buildSearchUrl",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#linkedinProvider.buildSearchUrl",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#remotarProvider.buildSearchUrl",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-      "type": "IMPORTS"
-    },
-    {
       "from": "/home/jooj/Documentos/projects/jobScraperBot/src/repositories/job-history.repository.ts",
       "to": "/home/jooj/Documentos/projects/jobScraperBot/src/repositories/job-history.repository.ts#JobHistoryRepository",
       "type": "DEFINES"
@@ -947,26 +913,6 @@
       "type": "DEFINES"
     },
     {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#ILocationOption",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderSelectors",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderConfig",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#Isearch",
-      "type": "DEFINES"
-    },
-    {
       "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ScrapedPost/iscrapedpost.interface.ts",
       "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ScrapedPost/iscrapedpost.interface.ts#ScrapedPost",
       "type": "DEFINES"
@@ -1057,6 +1003,101 @@
       "type": "IMPORTS"
     },
     {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#JobDigestFormatter",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#JobDigestFormatter",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#JobDigestFormatter.format",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#ApprovedJobDto",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2_supports-color@8.1.1/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.createInstance",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.connectInstance",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.sendMessage",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2_supports-color@8.1.1/node_modules/@nestjs/common/index.d.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/SendMessageDTO/index.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#glassdoorProvider.buildSearchUrl",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#linkedinProvider.buildSearchUrl",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts#remotarProvider.buildSearchUrl",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+      "type": "IMPORTS"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#ILocationOption",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderSelectors",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#IProviderConfig",
+      "type": "DEFINES"
+    },
+    {
+      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
+      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts#Isearch",
+      "type": "DEFINES"
+    },
+    {
       "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts",
       "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts#PlaywrightService",
       "type": "DEFINES"
@@ -1134,26 +1175,6 @@
     {
       "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts",
       "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ScrapedPost/iscrapedpost.interface.ts",
-      "type": "IMPORTS"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#JobDigestFormatter",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#JobDigestFormatter",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#JobDigestFormatter.format",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts#ApprovedJobDto",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2_supports-color@8.1.1/node_modules/@nestjs/common/index.d.ts",
       "type": "IMPORTS"
     },
     {
@@ -1255,64 +1276,28 @@
       "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts",
       "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts",
       "type": "IMPORTS"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.createInstance",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.connectInstance",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts#WhatsappService.sendMessage",
-      "type": "DEFINES"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/node_modules/.pnpm/@nestjs+common@11.1.21_reflect-metadata@0.2.2_rxjs@7.8.2_supports-color@8.1.1/node_modules/@nestjs/common/index.d.ts",
-      "type": "IMPORTS"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts",
-      "type": "IMPORTS"
-    },
-    {
-      "from": "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts",
-      "to": "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/SendMessageDTO/index.ts",
-      "type": "IMPORTS"
     }
   ],
   "mtimes": {
-    "/home/jooj/Documentos/projects/jobScraperBot/context/contextatlas.client.ts": 1787870024137.29,
-    "/home/jooj/Documentos/projects/jobScraperBot/src/app.controller.spec.ts": 1787771416228.7112,
+    "/home/jooj/Documentos/projects/jobScraperBot/src/app.controller.spec.ts": 1787870300170.3103,
     "/home/jooj/Documentos/projects/jobScraperBot/src/app.controller.ts": 1787771416229.7625,
     "/home/jooj/Documentos/projects/jobScraperBot/src/app.module.ts": 1787771416229.7625,
     "/home/jooj/Documentos/projects/jobScraperBot/src/app.service.ts": 1787771416229.7625,
-    "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts": 1787865987668.5737,
+    "/home/jooj/Documentos/projects/jobScraperBot/src/config/providers.ts": 1787957161775.0764,
     "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface.ts": 1787771416229.876,
     "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/ScrapedPost/iscrapedpost.interface.ts": 1787771416229.876,
     "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/SendMessageDTO/index.ts": 1787771416229.876,
-    "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts": 1787869982682.287,
+    "/home/jooj/Documentos/projects/jobScraperBot/src/interfaces/isearch/isearch.interface.ts": 1787957441604.9988,
     "/home/jooj/Documentos/projects/jobScraperBot/src/main.ts": 1787771416229.876,
     "/home/jooj/Documentos/projects/jobScraperBot/src/repositories/job-history.repository.ts": 1787771416229.876,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/Linkedin/linkedin-apify.service.ts": 1787771416230.081,
-    "/home/jooj/Documentos/projects/jobScraperBot/src/services/bot/bot.service.spec.ts": 1787771416230.081,
+    "/home/jooj/Documentos/projects/jobScraperBot/src/services/bot/bot.service.spec.ts": 1787870294641.3098,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/bot/bot.service.ts": 1787771416230.151,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.spec.ts": 1787771416230.151,
-    "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts": 1787869987841.2874,
+    "/home/jooj/Documentos/projects/jobScraperBot/src/services/playWrightService/scrapservice.service.ts": 1787957428764.9814,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/job-digest.formatter.ts": 1787771416230.2007,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.spec.ts": 1787771416230.2925,
-    "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts": 1787867853066.98,
+    "/home/jooj/Documentos/projects/jobScraperBot/src/services/task-service/task-service.service.ts": 1787957432409.9863,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.spec.ts": 1787771416230.2925,
     "/home/jooj/Documentos/projects/jobScraperBot/src/services/whatsapp-service/whatsapp-service.service.ts": 1787771416230.4182,
     "/home/jooj/Documentos/projects/jobScraperBot/src/utils/heuristics.ts": 1787771416230.4182,

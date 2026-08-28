@@ -3,15 +3,23 @@ import { IProviderConfig, ILocationOption } from '../interfaces/isearch/isearch.
 export const glassdoorProvider: IProviderConfig = {
   name: 'glassdoor',
   buildSearchUrl: (query: string, location?: ILocationOption) => {
-    const locStr = location?.locationQuery || 'Brasil';
-    return `https://www.glassdoor.com.br/Vaga/${(location?.locationQuery)}-${encodeURIComponent(query)}-vagas-SRCH_IL.0,15_IC${location?.providerParams?.glassdoorGeoId}_KO16,36.htm}`;
+    const locId =
+      location?.providerParams?.glassdoorLocationId ||
+      location?.providerParams?.glassdoorGeoId;
+    const icPart = locId ? `_IC${locId}` : '';
+    const locPart = location?.locationQuery ? `${location.locationQuery}-` : '';
+    const cleanQuery = encodeURIComponent(
+      query.toLowerCase().replace(/\s+/g, '-'),
+    );
+
+    return `https://www.glassdoor.com.br/Vaga/${locPart}${cleanQuery}-vagas-SRCH_IL.0,15${icPart}.htm`;
   },
   selectors: {
-    container: '[data-test="jobListing"]',
-    jobTitle: '[data-test="job-title"]',
-    companyName: '[class*="EmployerProfile"]',
-    jobLink: 'a[data-test="job-title"]',
-    waitSelector: 'article, [data-test="jobListing"]',
+    container: '[data-test="jobListing"], article, [class*="JobCard"], li[class*="JobsList_jobListItem"]',
+    jobTitle: '[data-test="job-title"], a[class*="JobTitle"], [class*="job-title"]',
+    companyName: '[class*="EmployerProfile"], [class*="EmployerName"], [data-test="employer-name"]',
+    jobLink: 'a[data-test="job-title"], a[class*="JobTitle"], a[href*="/job-listing/"]',
+    waitSelector: '[data-test="jobListing"], article, [class*="JobsList"], [class*="JobCard"], a[href*="/job-listing/"]',
     baseUrl: 'https://www.glassdoor.com.br',
   },
 };
@@ -19,7 +27,7 @@ export const glassdoorProvider: IProviderConfig = {
 export const linkedinProvider: IProviderConfig = {
   name: 'linkedin',
   buildSearchUrl: (query: string, location?: ILocationOption) => {
-    const locQuery = location?.locationQuery || 'Brazil';
+    const locQuery = location?.locationQuery!
     const geoId = location?.providerParams?.linkedinGeoId || '106057199';
     return `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(query)}&location=${encodeURIComponent(locQuery)}&geoId=${geoId}&f_TPR=r3600&position=1&pageNum=0`;
   },

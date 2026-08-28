@@ -56,7 +56,7 @@ export class PlaywrightService {
     const { browser, context } = await this.startBrowser();
     const allJobs: ScrapedPost[] = [];
 
-    const targetLocations = search.locations || search.location || [];
+    const targetLocations = search.location!;
     const tasks: { query: string; locOption: any }[] = [];
 
     for (const query of search.searchQueries) {
@@ -97,12 +97,17 @@ export class PlaywrightService {
               timeout: 45000,
             });
 
+            // Scroll suave para forçar o carregamento/hidratação dos componentes dinamicos do Glassdoor/React
+            await page.evaluate(() => window.scrollBy(0, 300));
+
             try {
               await page.waitForSelector(
                 search.provider.selectors.waitSelector,
                 { timeout: 15000 },
               );
             } catch (e) {
+              // Tenta scroll adicional se o seletor não apareceu imediatamente
+              await page.evaluate(() => window.scrollBy(0, 500));
               this.logger.warn(
                 `Aviso: Seletor '${search.provider.selectors.waitSelector}' não apareceu a tempo para [${search.provider.name} | ${query} | ${locOption.label || 'Busca'}]`,
               );

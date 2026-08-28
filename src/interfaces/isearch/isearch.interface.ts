@@ -1,6 +1,7 @@
 export type WorkplaceType = 'remote' | 'onsite' | 'hybrid';
 
 export interface ILocationOption {
+  provider?: "linkedin" | "glassdoor"
   label: string;
   workplaceTypes: WorkplaceType[];
   locationQuery?: string;
@@ -26,7 +27,6 @@ export interface IProviderConfig {
 export interface Isearch {
   provider: IProviderConfig;
   searchQueries: string[];
-  locations: ILocationOption[];
-  location?: ILocationOption[] | any[];
+  location?: ILocationOption[];
   sortBy?: 'relevance' | 'date';
 }

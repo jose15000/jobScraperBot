@@ -27,7 +27,11 @@ export class TaskService {
       'desenvolvedor full-stack Júnior',
       'desenvolvedor full-stack pleno',
       'desenvolvedor front-end pleno',
+      `vaga(junior OR jr OR pleno)(React OR Node OR TypeScript) Curitiba - sênior - senior - lead`,
+      `vaga(desenvolvedor OR developer)(IA OR "inteligência artificial" OR LLM OR AI) Curitiba(React OR Python OR Node)`,
+      `(hiring OR contratando) "full stack" Curitiba(React OR Node OR Python) - senior - sênior`
     ];
+
 
     const locations: ILocationOption[] = [
       {
@@ -36,6 +40,7 @@ export class TaskService {
         locationQuery: 'trabalho-remoto',
       },
       {
+        provider: 'glassdoor',
         label: 'Curitiba (Presencial/Híbrido)',
         workplaceTypes: ['onsite', 'hybrid'],
         locationQuery: 'curitiba-brasil',
@@ -149,7 +154,7 @@ export class TaskService {
         );
         const posts = await this.botService.makeRequest({
           searchQueries: queries,
-          locations: locations,
+          location: locations,
           provider: providerConfig,
         });
 
