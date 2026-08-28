@@ -1,14 +1,15 @@
 # =========================================================
-# Base com Playwright pronto
+# Base com Node.js e Playwright
 # =========================================================
-FROM mcr.microsoft.com/playwright:v1.48.0-focal AS base
+FROM mcr.microsoft.com/playwright:v1.49.1-noble AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 WORKDIR /usr/src/app
 
-RUN corepack enable && corepack prepare pnpm@10.15.0 --activate
+# Instala o pnpm via npm para evitar erro de verificação de chave do corepack
+RUN npm install -g pnpm@10
 
 # =========================================================
 # Dependencies
