@@ -1,7 +1,7 @@
 # =========================================================
 # Base com Node.js e Playwright
 # =========================================================
-FROM mcr.microsoft.com/playwright:v1.49.1-noble AS base
+FROM mcr.microsoft.com/playwright:v1.60.1-noble AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
