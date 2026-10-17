@@ -12,6 +12,7 @@ import { ScrapedPost } from 'src/interfaces/ScrapedPost/iscrapedpost.interface';
 import { ILocationOption } from 'src/interfaces/isearch/isearch.interface';
 
 import { JevService } from '../jev/jev.service';
+import { JobDeduplicationService } from '../../utils/deduplication';
 
 @Injectable()
 export class TaskService {
@@ -23,6 +24,7 @@ export class TaskService {
     private readonly historyRepository: JobHistoryRepository,
     private readonly scrapeLinkedinPosts: LinkedinApifyService,
     private readonly digestFormatter: JobDigestFormatter,
+    private readonly jobDeduplicationService: JobDeduplicationService,
   ) { }
 
   async runScrapeJob() {
@@ -62,17 +64,19 @@ export class TaskService {
       `Total de posts brutos coletados: ${rawPosts.length}. Carregando histórico do banco e iniciando filtragem...`,
     );
 
-    // Carrega histórico recente para deduplicação semântica pelo Jev
-    const recentStoredJobs = await this.historyRepository.getRecentJobs(100, 30);
+    // Carrega histórico recente para deduplicação por título e empresa
+    const recentStoredJobs = await this.historyRepository.getRecentJobs(300, 30);
     this.logger.log(
       `📚 ${recentStoredJobs.length} vagas recentes carregadas do banco para checagem de duplicatas.`,
     );
 
+    // Inicializa conjunto de chaves únicas (título + empresa) com base no banco
+    const seenJobKeys = this.jobDeduplicationService.createKeySet(recentStoredJobs);
+
     const approvedJobs: ApprovedJobDto[] = [];
     const newlySentJobs: { url: string; title: string; company?: string }[] = [];
-    const seenLinks = new Set<string>();
 
-    // 3. Processamento, Deduplicação e Heurística de todas as vagas de uma vez
+    // 3. Processamento, Deduplicação (Título + Empresa) e Heurística com Jev
     for (const post of rawPosts) {
       const text = post.text || '';
       let url = post.url || '';
@@ -92,17 +96,21 @@ export class TaskService {
         url = `urn:job-hash:${hash}`;
       }
 
-      if (seenLinks.has(url)) {
-        this.logger.debug(`essa vaga já está na lista da execução atual: ${url}`);
+      // Deduplicação pelo Título da Vaga e Empresa (não pelo link)
+      if (
+        this.jobDeduplicationService.isDuplicate(
+          { title, company },
+          seenJobKeys,
+        )
+      ) {
+        this.logger.debug(
+          `⏭️ Vaga descartada como duplicata (título + empresa já vistos): "${title}" | Empresa: "${company || 'Não informada'}"`,
+        );
         continue;
       }
-      seenLinks.add(url);
 
-      // 1. Fast Check de URL no PostgreSQL (Custo 0)
-      if (await this.historyRepository.existsExactUrl(url)) {
-        this.logger.debug(`⏭️ Ignorando vaga já enviada anteriormente (URL exata no banco): ${url}`);
-        continue;
-      }
+      // Registra a chave para evitar repetições no mesmo ciclo de execução
+      seenJobKeys.add(this.jobDeduplicationService.createKey(title, company));
 
       // 3. Filtragem e Avaliação de Fit com o Jev
       const result = await this.jevService.evaluateJob({

@@ -42,13 +42,16 @@ O bot executa em ciclos programados (controlados por cron local ou da nuvem) rea
 ```bash
 ├── .agents/                    # Workflows do agente autônomo
 ├── context/                    # Grafos de Contexto e Raciocínio (ContextAtlas)
+├── drizzle.config.ts           # Configuração do Drizzle Kit para PostgreSQL
 ├── src/
 │   ├── config/
 │   │   └── providers.ts        # Definição dos seletores e URLs de plataformas (Glassdoor, Indeed, Remotar, etc.)
+│   ├── database/
+│   │   └── schema.ts           # Schemas e tabelas Drizzle ORM (sent_jobs)
 │   ├── interfaces/
 │   │   └── isearch/            # Definições de contratos e interfaces de scraping
 │   ├── repositories/
-│   │   └── job-history.repository.ts # Repositório PostgreSQL para histórico e deduplicação
+│   │   └── job-history.repository.ts # Repositório Drizzle ORM para histórico e deduplicação
 │   ├── services/
 │   │   ├── bot/                # Agrupa requisições Playwright e chamadas Evolution API
 │   │   ├── jev/                # Serviço de avaliação heurística de vagas via TypeSafe Jev

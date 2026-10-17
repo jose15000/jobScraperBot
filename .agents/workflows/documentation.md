@@ -15,6 +15,8 @@ The project is built on **NestJS** and follows a **Clean Architecture / Service-
 ### Directory Structure:
 ```text
 src/
+  ├── database/
+  │     └── schema.ts            # Drizzle ORM table definitions, constraints and indexes
   ├── interfaces/
   │     ├── isearch/             # LinkedIn search query definitions and shapes
   │     └── glassdoor-search/    # Glassdoor search query definitions and shapes
@@ -26,7 +28,7 @@ src/
   │     ├── whatsapp-service/    # Low-level integrations with the Evolution API
   │     └── task-service/        # One-shot pipeline execution & delegates
   │           ├── job-digest.formatter.ts   # Formatting (Presentation Layer)
-  │           ├── job-history.repository.ts # PostgreSQL persistent repository (Data Layer)
+  │           ├── job-history.repository.ts # Drizzle ORM PostgreSQL repository (Data Layer)
   │           └── task-service.service.ts   # Pipeline Orchestration (Application Layer)
   ├── main.ts                    # One-shot bootstrap: runs pipeline and exits
   └── utils/
@@ -37,7 +39,7 @@ src/
 ### Core Architecture & SOLID Principles:
 1. **Single Responsibility Principle (SRP):**
    - **`TaskService`**: Solely responsible for orchestrating the one-shot pipeline.
-   - **`JobHistoryRepository`**: Solely handles persistent storage and querying of sent jobs.
+   - **`JobHistoryRepository`**: Solely handles persistent storage and querying of sent jobs using **Drizzle ORM**.
    - **`JobDeduplicationService`**: Solely handles title and company normalization and duplicate filtering.
    - **`JevService`**: Handles semantic job fit evaluation via TypeSafe Jev.
    - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages.
