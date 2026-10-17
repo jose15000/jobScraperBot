@@ -147,13 +147,16 @@ export class PlaywrightService {
 
     $(selectors.container).each((i, element) => {
       const jobTitle = $(element).find(selectors.jobTitle).text().trim();
-      const companyName = $(element)
+      const rawCompany = $(element)
         .find(selectors.companyName)
         .first()
         .text()
         .trim();
+      const cleanCompany = rawCompany.replace(/\d+([.,]\d+)?\s*$/, '').trim();
 
-      const postText = `Vaga: ${jobTitle} | Empresa: ${companyName}`;
+      const postText = cleanCompany
+        ? `Vaga: ${jobTitle} | Empresa: ${cleanCompany}`
+        : `Vaga: ${jobTitle}`;
 
       let postUrl = $(element).find(selectors.jobLink).attr('href') || '';
 
@@ -166,7 +169,12 @@ export class PlaywrightService {
       }
 
       if (jobTitle) {
-        jobs.push({ text: postText, url: postUrl });
+        jobs.push({
+          title: jobTitle,
+          company: cleanCompany || undefined,
+          text: postText,
+          url: postUrl,
+        });
       }
     });
 

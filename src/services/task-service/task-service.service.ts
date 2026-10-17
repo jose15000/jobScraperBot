@@ -32,9 +32,8 @@ export class TaskService {
       'desenvolvedor full-stack Júnior',
       'desenvolvedor full-stack pleno',
       'desenvolvedor front-end pleno',
-      `vaga(junior OR jr OR pleno)(React OR Node OR TypeScript) Curitiba - sênior - senior - lead`,
-      `vaga(desenvolvedor OR developer)(IA OR "inteligência artificial" OR LLM OR AI) Curitiba(React OR Python OR Node)`,
-      `(hiring OR contratando) "full stack" Curitiba(React OR Node OR Python) - senior - sênior`
+      'desenvolvedor react',
+      'desenvolvedor nodejs',
     ];
 
 
@@ -53,6 +52,16 @@ export class TaskService {
           glassdoorLocationId: '2387909',
         },
       },
+
+      {
+        provider: "linkedin",
+        label: "São Paulo",
+        workplaceTypes: ['remote', 'onsite', 'hybrid'],
+        locationQuery: 'sao-paulo-brasil',
+        providerParams: {
+          linkedinGeoId: '103501557'
+        }
+      }
     ];
 
     this.logger.log('🚀 Iniciando pipeline consolidado de busca de vagas...');
@@ -80,11 +89,41 @@ export class TaskService {
     for (const post of rawPosts) {
       const text = post.text || '';
       let url = post.url || '';
-      const title =
-        post.title ||
-        text.split('\n')[0].replace(/[#*•-]/g, '').trim().substring(0, 100) ||
-        'Desenvolvedor';
-      const company = post.company || '';
+
+      // Extração robusta de title e company
+      let title = post.title?.trim() || '';
+      let company = post.company?.trim() || '';
+
+      // Fallback para caso o post venha apenas com text formatado "Vaga: ... | Empresa: ..."
+      if (!title && text) {
+        const textMatch = text.match(/Vaga:\s*(.*?)(?:\s*\|\s*Empresa:\s*(.*))?$/i);
+        if (textMatch) {
+          title = textMatch[1]?.trim() || '';
+          if (!company && textMatch[2]) {
+            company = textMatch[2]?.trim() || '';
+          }
+        }
+      }
+
+      if (!title) {
+        title =
+          text.split('\n')[0].replace(/[#*•-]/g, '').trim().substring(0, 100) ||
+          'Desenvolvedor';
+      }
+
+      // Se o título ainda contiver o prefixo "Vaga: ... | Empresa: ..."
+      const titleMatch = title.match(/^Vaga:\s*(.*?)(?:\s*\|\s*Empresa:\s*(.*))?$/i);
+      if (titleMatch) {
+        title = titleMatch[1]?.trim() || title;
+        if (!company && titleMatch[2]) {
+          company = titleMatch[2]?.trim() || '';
+        }
+      }
+
+      // Limpa ratings/avaliações residuais no nome da empresa (ex: Decathlon3,9 -> Decathlon)
+      if (company) {
+        company = company.replace(/\d+([.,]\d+)?\s*$/, '').trim();
+      }
 
       if (!text) continue;
 

@@ -63,8 +63,8 @@ export async function evaluateJobFitWithJev(
       matches_profile: noul(
         "Does this job candidate match the user's desired criteria, acceptable seniority levels, and allowed locations?",
         {
-          true: "The position fits the target stack, is junior or pleno level, and is in an allowed location (or remote).",
-          false: "It requires senior/lead level, is an internship, belongs to an unrelated tech stack, or is outside allowed locations.",
+          true: "The position fits the target stack, is junior or pleno level, and is in an allowed location (or remote). If the description is concise (e.g. title and company card), a junior or pleno developer, full-stack, frontend, or backend position matches.",
+          false: "It requires senior/lead level, is an internship, belongs to an unrelated tech stack (e.g. C#, .NET, Java, PHP, mobile-only), is a non-tech position, or is outside allowed locations.",
         },
       ),
       is_actual_job_offer: noul(
@@ -85,13 +85,13 @@ export async function evaluateJobFitWithJev(
     const isJobProb = response.answers.is_actual_job_offer.noul;
 
     // Regra calibrada do Jev:
-    // Deve ser uma oferta real (>= 0.65) e bater com o perfil (>= 0.65)
-    const shouldApply = isJobProb >= 0.65 && matchProb >= 0.65;
+    // Deve ser uma oferta real (>= 0.60) e bater com o perfil (>= 0.50)
+    const shouldApply = isJobProb >= 0.60 && matchProb >= 0.50;
     const score = Math.round(matchProb * 100);
 
     let reason = 'Aprovada pelo Jev: perfil e senioridade compatíveis.';
     if (!shouldApply) {
-      if (isJobProb < 0.65) {
+      if (isJobProb < 0.60) {
         reason = `Rejeitada pelo Jev: não aparenta ser uma vaga real de contratação (prob: ${Math.round(isJobProb * 100)}%).`;
       } else {
         reason = `Rejeitada pelo Jev: fora do perfil/senioridade desejados (prob: ${score}%).`;

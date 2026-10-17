@@ -190,6 +190,17 @@
         "description": "Refactored JobHistoryRepository to use Drizzle ORM query builder and created src/database/schema.ts for typed table mapping.",
         "timestamp": "2026-10-17T03:01:27.336Z"
       }
+    },
+    {
+      "graphType": "Code",
+      "id": "793a2e58-c8b2-43a9-b76b-ff8c6203f7e2",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/playWrightService/scrapservice.service.ts",
+        "agentThought": "fix",
+        "description": "Fixed title and company extraction in PlaywrightService and TaskService; calibrated Jev prompt for concise postings and adjusted threshold to 50%",
+        "timestamp": "2026-10-17T19:49:17.413Z"
+      }
     }
   ],
   "edges": [
@@ -276,6 +287,11 @@
     {
       "from": "e09de4cc-236d-4ca4-bcd7-65fcf8c17346",
       "to": "src/repositories/job-history.repository.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "793a2e58-c8b2-43a9-b76b-ff8c6203f7e2",
+      "to": "src/services/playWrightService/scrapservice.service.ts",
       "type": "MODIFIES"
     }
   ]
