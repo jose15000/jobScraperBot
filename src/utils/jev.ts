@@ -1,0 +1,113 @@
+import { TypeSafeClient, noul } from '@typesafe-ai/sdk';
+import { Logger } from '@nestjs/common';
+import { JevFitEvaluation, JobCandidateInput } from 'src/interfaces/JobCandidateInput/IjobcandidateInput';
+
+const logger = new Logger('JevHeuristics');
+
+export interface UserProfileCriteria {
+  targetRoles: string[];
+  targetTechnologies: string[];
+  acceptableLevels: string[];
+  excludedLevels: string[];
+  locations: string[];
+}
+
+export const DEFAULT_USER_PROFILE: UserProfileCriteria = {
+  targetRoles: [
+    'Desenvolvedor Full Stack Júnior',
+    'Desenvolvedor Full Stack Pleno',
+    'Desenvolvedor Front-end Pleno',
+    'Desenvolvedor Back-end Júnior/Pleno',
+    'Software Engineer Júnior/Pleno',
+  ],
+  targetTechnologies: [
+    'React',
+    'Node.js',
+    'TypeScript',
+    'JavaScript',
+    'Next.js',
+    'NestJS',
+    'Python',
+    'Docker',
+    'PostgreSQL',
+  ],
+  acceptableLevels: ['Júnior', 'Junior', 'Pleno', 'Mid', 'Entry Level'],
+  excludedLevels: ['Sênior', 'Senior', 'Staff', 'Tech Lead', 'Especialista', 'Estágio', 'Estagiário'],
+  locations: ['Remoto', 'Curitiba', "São Paulo"],
+};
+
+
+export async function evaluateJobFitWithJev(
+  client: TypeSafeClient,
+  job: JobCandidateInput,
+  profile: UserProfileCriteria = DEFAULT_USER_PROFILE,
+): Promise<JevFitEvaluation> {
+  try {
+    const state = {
+      user_criteria: {
+        desired_roles: profile.targetRoles,
+        desired_technologies: profile.targetTechnologies,
+        acceptable_levels: profile.acceptableLevels,
+        strictly_excluded_levels: profile.excludedLevels,
+        allowed_locations: profile.locations,
+      },
+      job_candidate: {
+        title: job.title || 'Título não especificado',
+        company: job.company || 'Empresa não especificada',
+        location: job.location || 'Não especificada',
+        description_excerpt: (job.text || '').substring(0, 1500),
+      },
+    };
+
+    const questions = {
+      matches_profile: noul(
+        "Does this job candidate match the user's desired criteria, acceptable seniority levels, and allowed locations?",
+        {
+          true: "The position fits the target stack, is junior or pleno level, and is in an allowed location (or remote).",
+          false: "It requires senior/lead level, is an internship, belongs to an unrelated tech stack, or is outside allowed locations.",
+        },
+      ),
+      is_actual_job_offer: noul(
+        "Is this an actual job vacancy or recruitment post, rather than an applicant seeking employment (open to work) or unrelated promotion?",
+        {
+          true: "A hiring manager, recruiter, or company is hiring or advertising a real job opening.",
+          false: "A candidate is looking for work, an advertisement for courses, or general professional commentary.",
+        },
+      ),
+    };
+
+    const response = await client.systemOne({
+      state,
+      questions,
+    });
+
+    const matchProb = response.answers.matches_profile.noul;
+    const isJobProb = response.answers.is_actual_job_offer.noul;
+
+    // Regra calibrada do Jev:
+    // Deve ser uma oferta real (>= 0.65) e bater com o perfil (>= 0.65)
+    const shouldApply = isJobProb >= 0.65 && matchProb >= 0.65;
+    const score = Math.round(matchProb * 100);
+
+    let reason = 'Aprovada pelo Jev: perfil e senioridade compatíveis.';
+    if (!shouldApply) {
+      if (isJobProb < 0.65) {
+        reason = `Rejeitada pelo Jev: não aparenta ser uma vaga real de contratação (prob: ${Math.round(isJobProb * 100)}%).`;
+      } else {
+        reason = `Rejeitada pelo Jev: fora do perfil/senioridade desejados (prob: ${score}%).`;
+      }
+    }
+
+    return {
+      shouldApply,
+      score,
+      matchProbability: matchProb,
+      isJobOfferProbability: isJobProb,
+      reason,
+    };
+  } catch (error) {
+    logger.error('Erro ao avaliar vaga com o Jev:', error);
+    throw error;
+  }
+}
+

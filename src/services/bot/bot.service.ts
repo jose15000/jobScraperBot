@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { runJobHeuristic, FilterResult } from '../../utils/heuristics';
 import { PlaywrightService } from '../playWrightService/scrapservice.service';
 import { Isearch } from 'src/interfaces/isearch/isearch.interface';
 import { WhatsappService } from '../whatsapp-service/whatsapp-service.service';
@@ -15,10 +14,6 @@ export class BotService {
   async makeRequest(search: Isearch) {
     const content = await this.scrapService.scrape(search);
     return content;
-  }
-
-  async filterJobs(content: string): Promise<FilterResult> {
-    return runJobHeuristic(content);
   }
 
   async sendMessage(content: SendMessageDTO) {

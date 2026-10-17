@@ -8,6 +8,8 @@ import { BotService } from './services/bot/bot.service';
 import { JobHistoryRepository } from './repositories/job-history.repository';
 import { JobDigestFormatter } from './services/task-service/job-digest.formatter';
 import { LinkedinApifyService } from './services/Linkedin/linkedin-apify.service';
+import { JevService } from './services/jev/jev.service';
+import { JobDeduplicationService } from './utils/deduplication';
 
 @Module({
   imports: [ConfigModule.forRoot()],
@@ -17,9 +19,11 @@ import { LinkedinApifyService } from './services/Linkedin/linkedin-apify.service
     WhatsappService,
     TaskService,
     BotService,
+    JevService,
     JobHistoryRepository,
     JobDigestFormatter,
     LinkedinApifyService,
+    JobDeduplicationService,
   ],
 })
 export class AppModule { }

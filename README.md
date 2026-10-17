@@ -13,8 +13,8 @@ graph TD
     B --> D[Scrape LinkedIn Feed<br/>Apify Actor Sync API]
     C --> E[Raw Posts Array]
     D --> E
-    E --> F[Deduplicação<br/>PostgreSQL HistoryRepository]
-    F --> G[Filtro Heurístico<br/>BotService / heuristics.ts]
+    E --> F[Deduplicação Título + Empresa<br/>JobDeduplicationService / PostgreSQL]
+    F --> G[Filtro Heurístico IA<br/>JevService / TypeSafe Jev]
     G -->|Aprovadas| H[Formatação Digest<br/>JobDigestFormatter]
     H --> I[Evolution API]
     I --> J[WhatsApp Digest Message]
@@ -26,13 +26,12 @@ O bot executa em ciclos programados (controlados por cron local ou da nuvem) rea
    Acessa os portais de vagas configurados (`Glassdoor`, `Remotar`, `Indeed`, `LinkedIn Jobs`) usando seletores dinâmicos de HTML carregados com o Playwright para extrair títulos, empresas e links.
 2. **Coleta de Feed (LinkedIn Posts)**:
    Invoca o actor do Apify `harvestapi/linkedin-post-search` de forma síncrona. Ele envia queries booleanas otimizadas e traz o texto cru das publicações recentes no feed do LinkedIn (onde recrutadores divulgam vagas sem registrá-las na aba de vagas tradicional).
-3. **Deduplicação**:
-   Cada vaga/post passa pelo banco de dados PostgreSQL. Se o link da vaga já foi enviado em execuções passadas, ele é descartado imediatamente.
-4. **Filtro Heurístico**:
-   O texto da vaga é analisado contra um dicionário de termos:
-   - **Pontuação Positiva**: Tecnologias desejadas (React, Node.js, TypeScript, NestJS, Tailwind, etc.) e níveis corretos (Júnior, Pleno, Entry, Mid).
-   - **Filtro Exclusivo (Rejeição imediata)**: Termos de regime presencial, híbrido, vagas de nível Sênior/Lead, ou posts que indicam busca de emprego por candidatos (ex: "estou à procura", "open to work").
-   - **Nota de Corte**: Apenas vagas com pontuação final $\ge 25$ são aprovadas.
+3. **Deduplicação por Título e Empresa**:
+   Para evitar notificações repetidas e economizar chamadas de IA, a deduplicação compara a combinação de título e empresa normalizados (sem depender do link). A verificação cruza as vagas contra o histórico recente do PostgreSQL e descarta duplicatas dentro do mesmo lote antes da avaliação heurística.
+4. **Filtro Heurístico (TypeSafe Jev AI)**:
+   O conteúdo das vagas inéditas é avaliado pelo modelo System One do **TypeSafe (Jev)** via julgamento probabilístico tipado (`noul`):
+   - **Fit com o Perfil**: Avalia se a vaga é de fato para desenvolvedor Júnior/Pleno com a stack desejada (React, Node.js, TypeScript, etc.) e na modalidade desejada (Remoto ou Curitiba).
+   - **Eliminação de Falsos Positivos**: Elimina com precisão anúncios de cursos, processos de mentoria, posts de candidatos buscando recolocação ("Open to Work") e vagas de nível Sênior/Lead.
 5. **Digest e Notificação**:
    As vagas aprovadas são consolidadas em um único resumo legível e disparadas no WhatsApp do usuário através da **Evolution API**, minimizando o spam e respeitando os limites da API.
 
@@ -49,14 +48,16 @@ O bot executa em ciclos programados (controlados por cron local ou da nuvem) rea
 │   ├── interfaces/
 │   │   └── isearch/            # Definições de contratos e interfaces de scraping
 │   ├── repositories/
-│   │   └── job-history.repository.ts # Repositório PostgreSQL para deduplicação
+│   │   └── job-history.repository.ts # Repositório PostgreSQL para histórico e deduplicação
 │   ├── services/
 │   │   ├── bot/                # Agrupa requisições Playwright e chamadas Evolution API
+│   │   ├── jev/                # Serviço de avaliação heurística de vagas via TypeSafe Jev
 │   │   ├── scrapservice/       # Motor genérico de scraping e integração com Apify
 │   │   ├── task-service/       # Orquestrador principal do pipeline (SRP)
 │   │   └── whatsapp-service/   # Serviço de comunicação direta com a Evolution API
 │   ├── utils/
-│   │   └── heuristics.ts       # Algoritmo de filtragem e dicionários de tecnologia/rejeição
+│   │   ├── deduplication.ts    # Funções e serviço injetável de deduplicação por título e empresa
+│   │   └── jev.ts              # Primitivas tipadas do TypeSafe Noul para avaliação heurística
 │   ├── app.module.ts           # Módulo raiz do NestJS
 │   └── main.ts                 # Ponto de entrada do aplicativo
 ├── docker-compose.yml          # Definição do ambiente completo (Postgres, PgAdmin, Evolution API, NestJS)

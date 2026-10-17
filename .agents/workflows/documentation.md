@@ -4,7 +4,7 @@ description: Project specs for context maintenance
 
 # Project Documentation & Specifications — JobSearchBot
 
-> **Project Goal:** Automated NestJS **one-shot pipeline** designed to scrape job opportunities from major platforms (LinkedIn, Indeed, Glassdoor) via Apify, process listings through a custom local heuristic/scoring engine, deduplicate processed links, and batch notify qualified junior/mid developer positions to WhatsApp via the Evolution API in a clean digest format. The container is scheduled externally by **Railway Cron** (every 1h) and exits after each run.
+> **Project Goal:** Automated NestJS **one-shot pipeline** designed to scrape job opportunities from major platforms (LinkedIn, Indeed, Glassdoor) via Apify and Playwright, deduplicate postings by job title and company, process listings through TypeSafe Jev (System One AI semantic heuristic evaluation), and batch notify qualified junior/mid developer positions to WhatsApp via the Evolution API in a clean digest format. The container is scheduled externally by **Railway Cron** (every 1h) and exits after each run.
 
 ---
 
@@ -19,7 +19,8 @@ src/
   │     ├── isearch/             # LinkedIn search query definitions and shapes
   │     └── glassdoor-search/    # Glassdoor search query definitions and shapes
   ├── services/
-  │     ├── bot/                 # Orchestrator interface linking heuristics and API requests
+  │     ├── bot/                 # Orchestrator interface for browser scraping and messaging requests
+  │     ├── jev/                 # TypeSafe Jev AI semantic heuristic evaluation (System One)
   │     ├── scrapservice/        # Low-level HTTP integrations with Apify (LinkedIn)
   │     ├── glassdoor/           # Low-level HTTP integrations with Apify (Glassdoor)
   │     ├── whatsapp-service/    # Low-level integrations with the Evolution API
@@ -29,17 +30,19 @@ src/
   │           └── task-service.service.ts   # Pipeline Orchestration (Application Layer)
   ├── main.ts                    # One-shot bootstrap: runs pipeline and exits
   └── utils/
-        └── heuristics.ts        # Custom logic engine (Rules & Heuristics)
+        ├── deduplication.ts     # Title and company deduplication logic & injectable service
+        └── jev.ts               # TypeSafe Jev evaluation primitives (Noul / fit)
 ```
 
 ### Core Architecture & SOLID Principles:
 1. **Single Responsibility Principle (SRP):**
    - **`TaskService`**: Solely responsible for orchestrating the one-shot pipeline.
-   - **`JobHistoryRepository`**: Solely handles job link persistence and deduplication check.
+   - **`JobHistoryRepository`**: Solely handles persistent storage and querying of sent jobs.
+   - **`JobDeduplicationService`**: Solely handles title and company normalization and duplicate filtering.
+   - **`JevService`**: Handles semantic job fit evaluation via TypeSafe Jev.
    - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages.
    - **`ScrapserviceService`**: Handles low-level LinkedIn scraper HTTP request logic.
    - **`GlassdoorService`**: Handles low-level Glassdoor scraper HTTP request logic.
-   - **`Heuristics Engine`**: Evaluates job descriptions to classify them.
 2. **Open-Closed Principle (OCP):**
    - Adding new scrapers (e.g. Indeed) can be done by creating a new service (like `GlassdoorService`) and adding it to `TaskService` without modifying the core deduplication repository or formatting logic.
 3. **Dependency Injection (DI):**
@@ -53,16 +56,16 @@ src/
 
 These core constraints govern the application's behavior and must **never** be violated:
 
-1. **Persistent Deduplication:** 
-   - A job posting URL must **never** be notified to WhatsApp more than once. All successfully notified links must be registered in the PostgreSQL `sent_jobs` table via `JobHistoryRepository`.
-   - Before evaluating a posting through the heuristic engine, the URL must be matched against the repository. If it exists, it must be skipped immediately.
+1. **Persistent Deduplication by Title & Company:** 
+   - Deduplication occurs by comparing the normalized **job title** and **company name**, never relying purely on the posting URL (which can vary between reposts and tracking links).
+   - Before evaluating heuristics with Jev, the batch is deduplicated against recent history stored in PostgreSQL (`sent_jobs`) as well as within the current execution batch.
 2. **Anti-Spam / Batch Notification (Digest):**
    - Individual WhatsApp message alerts are strictly prohibited to prevent WhatsApp number bans.
    - All qualified jobs within a single cron run must be consolidated into a single digest message.
    - If no new qualified jobs are found in a run, no message should be sent.
-3. **Keyword-Based Heuristic Scoring:**
-   - Jobs are evaluated by checking the occurrence of junior vs. senior/managerial keywords.
-   - The engine must filter out internships and strictly penalize senior positions to ensure accurate junior/mid-level developer matches.
+3. **Semantic Fit & Heuristic Scoring (TypeSafe Jev):**
+   - Jobs are evaluated by Jev against target roles, tech stack, and allowed locations, returning calibrated probabilities via `Noul`.
+   - The engine automatically penalizes senior positions/internships and verifies that posts are genuine hiring offers.
 
 ---
 

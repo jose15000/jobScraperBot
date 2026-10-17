@@ -9,7 +9,9 @@ import {
 } from '../../config/providers';
 import { LinkedinApifyService } from '../Linkedin/linkedin-apify.service';
 import { ScrapedPost } from 'src/interfaces/ScrapedPost/iscrapedpost.interface';
-import { IProviderConfig, ILocationOption } from 'src/interfaces/isearch/isearch.interface';
+import { ILocationOption } from 'src/interfaces/isearch/isearch.interface';
+
+import { JevService } from '../jev/jev.service';
 
 @Injectable()
 export class TaskService {
@@ -17,6 +19,7 @@ export class TaskService {
 
   constructor(
     private readonly botService: BotService,
+    private readonly jevService: JevService,
     private readonly historyRepository: JobHistoryRepository,
     private readonly scrapeLinkedinPosts: LinkedinApifyService,
     private readonly digestFormatter: JobDigestFormatter,
@@ -46,7 +49,6 @@ export class TaskService {
         locationQuery: 'curitiba-brasil',
         providerParams: {
           glassdoorLocationId: '2387909',
-          linkedinGeoId: '103501557',
         },
       },
     ];
@@ -57,17 +59,28 @@ export class TaskService {
     // 2. Unifica todos os posts brutos
     const rawPosts = [...webScrapedPosts];
     this.logger.log(
-      `Total de posts brutos coletados: ${rawPosts.length}. Iniciando filtragem e deduplicação...`,
+      `Total de posts brutos coletados: ${rawPosts.length}. Carregando histórico do banco e iniciando filtragem...`,
+    );
+
+    // Carrega histórico recente para deduplicação semântica pelo Jev
+    const recentStoredJobs = await this.historyRepository.getRecentJobs(100, 30);
+    this.logger.log(
+      `📚 ${recentStoredJobs.length} vagas recentes carregadas do banco para checagem de duplicatas.`,
     );
 
     const approvedJobs: ApprovedJobDto[] = [];
-    const newlySentJobs: { url: string; title: string }[] = [];
+    const newlySentJobs: { url: string; title: string; company?: string }[] = [];
     const seenLinks = new Set<string>();
 
     // 3. Processamento, Deduplicação e Heurística de todas as vagas de uma vez
     for (const post of rawPosts) {
       const text = post.text || '';
       let url = post.url || '';
+      const title =
+        post.title ||
+        text.split('\n')[0].replace(/[#*•-]/g, '').trim().substring(0, 100) ||
+        'Desenvolvedor';
+      const company = post.company || '';
 
       if (!text) continue;
 
@@ -80,23 +93,29 @@ export class TaskService {
       }
 
       if (seenLinks.has(url)) {
-        this.logger.debug(`essa vaga já está na lista: ${url}`);
+        this.logger.debug(`essa vaga já está na lista da execução atual: ${url}`);
         continue;
       }
       seenLinks.add(url);
 
-      // Deduplicação
-      if (await this.historyRepository.exists(url, text)) {
-        this.logger.debug(`⏭️ Ignorando vaga já enviada anteriormente: ${url}`);
+      // 1. Fast Check de URL no PostgreSQL (Custo 0)
+      if (await this.historyRepository.existsExactUrl(url)) {
+        this.logger.debug(`⏭️ Ignorando vaga já enviada anteriormente (URL exata no banco): ${url}`);
         continue;
       }
 
-      // Filtragem por heurística
-      const result = await this.botService.filterJobs(text);
+      // 3. Filtragem e Avaliação de Fit com o Jev
+      const result = await this.jevService.evaluateJob({
+        title,
+        text,
+        company,
+        location: post.location,
+        url,
+      });
 
       if (result.shouldApply) {
         this.logger.log(
-          `✅ Vaga aprovada (score: ${result.score}): ${text.substring(0, 80)}...`,
+          `✅ Vaga aprovada (score: ${result.score}): ${title} ${company ? `(${company})` : ''}`,
         );
         approvedJobs.push({
           score: result.score,
@@ -105,10 +124,12 @@ export class TaskService {
           previewText: text.substring(0, 150).replace(/\n/g, ' ').trim(),
         });
 
-        newlySentJobs.push({ url, title: text });
+        const newJobRecord = { url, title, company };
+        newlySentJobs.push(newJobRecord);
+        recentStoredJobs.unshift(newJobRecord);
       } else {
         this.logger.debug(
-          `❌ Rejeitada: ${result.reason} — ${text.substring(0, 60)}...`,
+          `❌ Rejeitada: ${result.reason} — ${title}`,
           url,
         );
       }

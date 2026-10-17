@@ -87,6 +87,98 @@
         "description": "Updated TaskService to configure structured ILocationOption list for Remote (Brasil) and Curitiba (Presencial/Hibrido) searches",
         "timestamp": "2026-08-27T23:01:36.021Z"
       }
+    },
+    {
+      "graphType": "Code",
+      "id": "c3965b69-1327-4857-8ad8-49b4777ae22c",
+      "type": "code_change",
+      "data": {
+        "file": "docker-compose.yml",
+        "agentThought": "fix",
+        "description": "Fix evolution_api unhealthy container error by adding DATABASE_PROVIDER and DATABASE_CONNECTION_URI to evolution-api environment in docker-compose.yml, plus depends_on: [postgres]",
+        "diff": "+    environment:\n+      - SERVER_URL=http://localhost:8080\n+      - DATABASE_PROVIDER=postgresql\n+      - DATABASE_CONNECTION_URI=postgresql://postgres:PASSWORD@postgres:5432/postgres?schema=public\n+    depends_on:\n+      - postgres",
+        "timestamp": "2026-10-15T23:01:08.827Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "6c1e20cc-8c8f-4cd0-8e2f-73dd143eab7b",
+      "type": "code_change",
+      "data": {
+        "file": "src/modules/cv/services/cv-extraction.service.ts",
+        "agentThought": "fix",
+        "description": "Fix CV section parsing, accent normalization, and bullet-aware experience extraction in CvExtractionService",
+        "diff": "Normalize section headers with NFD diacritics stripping, parse roles and dates cleanly, and correctly capture multi-line bullets",
+        "timestamp": "2026-10-15T23:20:35.926Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "49bd98fd-c0a0-4278-afec-d6cfe181765b",
+      "type": "code_change",
+      "data": {
+        "file": "Dockerfile",
+        "agentThought": "fix",
+        "description": "Add texlive packages and templates directory to Dockerfile runner stage for LaTeX compilation",
+        "diff": "+RUN apt-get update && apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra\n+COPY templates ./templates\n+RUN mkdir -p uploads/cv result",
+        "timestamp": "2026-10-15T23:21:06.467Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "32bf40d1-9d65-4060-a085-543c055bde94",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/task-service/task-service.service.ts",
+        "agentThought": "plan",
+        "description": "Implement TypeSafe Jev AI semantic heuristic and two-stage deduplication in TaskService and JobHistoryRepository",
+        "diff": "+ Installed @typesafe-ai/sdk\n+ Created src/utils/jev.ts with Noul questions for profile match and duplicate detection\n+ Created src/services/jev/jev.service.ts\n+ Updated JobHistoryRepository to add company, existsExactUrl, and getRecentJobs\n+ Integrated two-stage deduplication and semantic fit evaluation in TaskService",
+        "timestamp": "2026-10-17T00:21:32.211Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "6a8f4aab-7d21-4181-bfc9-0fafcb5eb61f",
+      "type": "code_change",
+      "data": {
+        "file": "src/utils/heuristics.ts",
+        "agentThought": "decision",
+        "description": "Removed legacy keyword heuristics and migrated completely to TypeSafe Jev model for job classification and deduplication.",
+        "timestamp": "2026-10-17T01:31:05.174Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "baaa486c-447b-462f-85d7-78b208a51f05",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/bot/bot.service.ts",
+        "agentThought": "decision",
+        "description": "Removed unused heuristics import and filterJobs method, delegating job evaluation exclusively to JevService.",
+        "timestamp": "2026-10-17T01:31:08.160Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "83a390eb-66f0-4408-a5e0-6108f15fe4a9",
+      "type": "code_change",
+      "data": {
+        "file": "src/utils/deduplication.ts",
+        "agentThought": "decision",
+        "description": "Created JobDeduplicationService in utils to deduplicate jobs by title and company instead of link/Jev, reserving Jev exclusively for semantic job heuristics.",
+        "timestamp": "2026-10-17T02:24:16.458Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "ea6c1370-e0a4-4d95-ac11-ac695464a6b8",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/task-service/task-service.service.ts",
+        "agentThought": "decision",
+        "description": "Injected JobDeduplicationService into TaskService to perform deduplication by title and company prior to Jev heuristics.",
+        "timestamp": "2026-10-17T02:24:22.072Z"
+      }
     }
   ],
   "edges": [
@@ -127,6 +219,46 @@
     },
     {
       "from": "64a2bc59-562f-4041-b5e0-ef03a3ebafad",
+      "to": "src/services/task-service/task-service.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "c3965b69-1327-4857-8ad8-49b4777ae22c",
+      "to": "docker-compose.yml",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "6c1e20cc-8c8f-4cd0-8e2f-73dd143eab7b",
+      "to": "src/modules/cv/services/cv-extraction.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "49bd98fd-c0a0-4278-afec-d6cfe181765b",
+      "to": "Dockerfile",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "32bf40d1-9d65-4060-a085-543c055bde94",
+      "to": "src/services/task-service/task-service.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "6a8f4aab-7d21-4181-bfc9-0fafcb5eb61f",
+      "to": "src/utils/heuristics.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "baaa486c-447b-462f-85d7-78b208a51f05",
+      "to": "src/services/bot/bot.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "83a390eb-66f0-4408-a5e0-6108f15fe4a9",
+      "to": "src/utils/deduplication.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "ea6c1370-e0a4-4d95-ac11-ac695464a6b8",
       "to": "src/services/task-service/task-service.service.ts",
       "type": "MODIFIES"
     }
