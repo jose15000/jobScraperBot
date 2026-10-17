@@ -4,11 +4,7 @@ packages:
 trustLockfile: true
 
 allowBuilds:
-  "@contextatlas/core": true
   "@nestjs/core": true
   esbuild: true
   koffi: true
-  onnxruntime-node: true
-  protobufjs: true
-  sharp: true
   unrs-resolver: true
