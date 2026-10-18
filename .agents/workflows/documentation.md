@@ -19,7 +19,11 @@ src/
   │     └── schema.ts            # Drizzle ORM table definitions, constraints and indexes
   ├── interfaces/
   │     ├── isearch/             # LinkedIn search query definitions and shapes
-  │     └── glassdoor-search/    # Glassdoor search query definitions and shapes
+  │     ├── glassdoor-search/    # Glassdoor search query definitions and shapes
+  │     └── job-config/          # Declarative YAML search and user profile configuration shapes
+  ├── config/
+  │     ├── providers.ts         # Scraper provider builders and CSS selectors
+  │     └── job-config.service.ts# Declarative YAML/ENV configuration loader (Config Layer)
   ├── services/
   │     ├── bot/                 # Orchestrator interface for browser scraping and messaging requests
   │     ├── jev/                 # TypeSafe Jev AI semantic heuristic evaluation (System One)
@@ -39,6 +43,7 @@ src/
 ### Core Architecture & SOLID Principles:
 1. **Single Responsibility Principle (SRP):**
    - **`TaskService`**: Solely responsible for orchestrating the one-shot pipeline.
+   - **`JobConfigService`**: Solely handles loading, parsing, and normalizing user search queries and semantic profiles from `jobs.config.yaml` or `.env`.
    - **`JobHistoryRepository`**: Solely handles persistent storage and querying of sent jobs using **Drizzle ORM**.
    - **`JobDeduplicationService`**: Solely handles title and company normalization and duplicate filtering.
    - **`JevService`**: Handles semantic job fit evaluation via TypeSafe Jev.

@@ -6,6 +6,7 @@ import { JobDigestFormatter } from './job-digest.formatter';
 import { JevService } from '../jev/jev.service';
 import { LinkedinApifyService } from '../Linkedin/linkedin-apify.service';
 import { JobDeduplicationService } from '../../utils/deduplication';
+import { JobConfigService } from '../../config/job-config.service';
 
 describe('TaskService', () => {
   let service: TaskService;
@@ -26,6 +27,12 @@ describe('TaskService', () => {
       isDuplicate: jest.fn(),
       createKeySet: jest.fn().mockReturnValue(new Set()),
       deduplicate: jest.fn(),
+    };
+
+    const mockJobConfigService = {
+      getQueries: jest.fn().mockReturnValue(['desenvolvedor full-stack Júnior']),
+      getLocations: jest.fn().mockReturnValue([]),
+      getUserProfile: jest.fn().mockReturnValue({}),
     };
 
     const mockHistoryRepository = {
@@ -53,6 +60,7 @@ describe('TaskService', () => {
         { provide: LinkedinApifyService, useValue: mockLinkedinApifyService },
         { provide: JobDigestFormatter, useValue: mockDigestFormatter },
         { provide: JobDeduplicationService, useValue: mockJobDeduplicationService },
+        { provide: JobConfigService, useValue: mockJobConfigService },
       ],
     }).compile();
 

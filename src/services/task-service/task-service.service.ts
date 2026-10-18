@@ -13,6 +13,7 @@ import { ILocationOption } from 'src/interfaces/isearch/isearch.interface';
 
 import { JevService } from '../jev/jev.service';
 import { JobDeduplicationService } from '../../utils/deduplication';
+import { JobConfigService } from '../../config/job-config.service';
 
 @Injectable()
 export class TaskService {
@@ -25,46 +26,18 @@ export class TaskService {
     private readonly scrapeLinkedinPosts: LinkedinApifyService,
     private readonly digestFormatter: JobDigestFormatter,
     private readonly jobDeduplicationService: JobDeduplicationService,
+    private readonly jobConfigService: JobConfigService,
   ) { }
 
   async runScrapeJob() {
-    const queries = [
-      'desenvolvedor full-stack Júnior',
-      'desenvolvedor full-stack pleno',
-      'desenvolvedor front-end pleno',
-      'desenvolvedor react',
-      'desenvolvedor nodejs',
-    ];
-
-
-    const locations: ILocationOption[] = [
-      {
-        label: 'Remoto (Brasil)',
-        workplaceTypes: ['remote'],
-        locationQuery: 'trabalho-remoto',
-      },
-      {
-        provider: 'glassdoor',
-        label: 'Curitiba (Presencial/Híbrido)',
-        workplaceTypes: ['onsite', 'hybrid'],
-        locationQuery: 'curitiba-brasil',
-        providerParams: {
-          glassdoorLocationId: '2387909',
-        },
-      },
-
-      {
-        provider: "linkedin",
-        label: "São Paulo",
-        workplaceTypes: ['remote', 'onsite', 'hybrid'],
-        locationQuery: 'sao-paulo-brasil',
-        providerParams: {
-          linkedinGeoId: '103501557'
-        }
-      }
-    ];
+    const queries = this.jobConfigService.getQueries();
+    const locations = this.jobConfigService.getLocations();
+    const userProfile = this.jobConfigService.getUserProfile();
 
     this.logger.log('🚀 Iniciando pipeline consolidado de busca de vagas...');
+    this.logger.log(
+      `🔍 Queries configuradas (${queries.length}): ${queries.join(', ')}`,
+    );
     const webScrapedPosts = await this.scrapeWebProviders(queries, locations);
 
     // 2. Unifica todos os posts brutos
@@ -152,13 +125,16 @@ export class TaskService {
       seenJobKeys.add(this.jobDeduplicationService.createKey(title, company));
 
       // 3. Filtragem e Avaliação de Fit com o Jev
-      const result = await this.jevService.evaluateJob({
-        title,
-        text,
-        company,
-        location: post.location,
-        url,
-      });
+      const result = await this.jevService.evaluateJob(
+        {
+          title,
+          text,
+          company,
+          location: post.location,
+          url,
+        },
+        userProfile,
+      );
 
       if (result.shouldApply) {
         this.logger.log(

@@ -10,6 +10,7 @@ import { JobDigestFormatter } from './services/task-service/job-digest.formatter
 import { LinkedinApifyService } from './services/Linkedin/linkedin-apify.service';
 import { JevService } from './services/jev/jev.service';
 import { JobDeduplicationService } from './utils/deduplication';
+import { JobConfigService } from './config/job-config.service';
 
 @Module({
   imports: [ConfigModule.forRoot()],
@@ -24,6 +25,7 @@ import { JobDeduplicationService } from './utils/deduplication';
     JobDigestFormatter,
     LinkedinApifyService,
     JobDeduplicationService,
+    JobConfigService,
   ],
 })
 export class AppModule { }

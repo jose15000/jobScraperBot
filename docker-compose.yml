@@ -12,6 +12,8 @@ services:
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:PASSWORD@postgres:5432/postgres
     restart: "no"
+    volumes:
+      - ./jobs.config.yaml:/usr/src/app/jobs.config.yaml:ro
     networks:
       - evolution-net
     depends_on:
