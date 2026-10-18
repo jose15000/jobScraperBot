@@ -2,7 +2,6 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { TypeSafeClient } from '@typesafe-ai/sdk';
 import {
   evaluateJobFitWithJev,
-  DEFAULT_USER_PROFILE,
   UserProfileCriteria,
 } from '../../utils/jev';
 import { JobCandidateInput } from 'src/interfaces/JobCandidateInput/IjobcandidateInput';
@@ -29,7 +28,7 @@ export class JevService implements OnModuleInit {
 
   async evaluateJob(
     job: JobCandidateInput,
-    profile: UserProfileCriteria = DEFAULT_USER_PROFILE,
+    profile: UserProfileCriteria,
   ): Promise<JobEvaluationResult> {
     if (!this.isAvailable || !this.client) {
       this.logger.error('TypeSafeClient não está inicializado para avaliar a vaga.');

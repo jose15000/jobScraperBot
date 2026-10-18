@@ -12,35 +12,10 @@ export interface UserProfileCriteria {
   locations: string[];
 }
 
-export const DEFAULT_USER_PROFILE: UserProfileCriteria = {
-  targetRoles: [
-    'Desenvolvedor Full Stack Júnior',
-    'Desenvolvedor Full Stack Pleno',
-    'Desenvolvedor Front-end Pleno',
-    'Desenvolvedor Back-end Júnior/Pleno',
-    'Software Engineer Júnior/Pleno',
-  ],
-  targetTechnologies: [
-    'React',
-    'Node.js',
-    'TypeScript',
-    'JavaScript',
-    'Next.js',
-    'NestJS',
-    'Python',
-    'Docker',
-    'PostgreSQL',
-  ],
-  acceptableLevels: ['Júnior', 'Junior', 'Pleno', 'Mid', 'Entry Level'],
-  excludedLevels: ['Sênior', 'Senior', 'Staff', 'Tech Lead', 'Especialista', 'Estágio', 'Estagiário'],
-  locations: ['Remoto', 'Curitiba', "São Paulo"],
-};
-
-
 export async function evaluateJobFitWithJev(
   client: TypeSafeClient,
   job: JobCandidateInput,
-  profile: UserProfileCriteria = DEFAULT_USER_PROFILE,
+  profile: UserProfileCriteria,
 ): Promise<JevFitEvaluation> {
   try {
     const state = {

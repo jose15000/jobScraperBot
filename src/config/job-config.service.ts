@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as YAML from 'yaml';
 import { AppJobConfig } from '../interfaces/job-config/job-config.interface';
-import { DEFAULT_USER_PROFILE, UserProfileCriteria } from '../utils/jev';
+import { UserProfileCriteria } from '../utils/jev';
 import { ILocationOption } from '../interfaces/isearch/isearch.interface';
 
 @Injectable()
@@ -33,22 +33,38 @@ export class JobConfigService implements OnModuleInit {
               `📄 Configuração carregada com sucesso do arquivo: ${configPath}`,
             );
             this.config = this.normalizeConfig(parsed);
+            this.validateConfig(this.config, configPath);
             return this.config;
           }
-        } catch (err) {
+        } catch (err: any) {
           this.logger.error(
-            `Erro ao ler/parsear arquivo de configuração em ${configPath}:`,
-            err,
+            `Erro ao ler/parsear arquivo de configuração em ${configPath}: ${err.message}`,
           );
+          throw err;
         }
       }
     }
 
-    this.logger.log(
-      'ℹ️ Nenhum arquivo jobs.config.yaml encontrado. Usando variáveis de ambiente / defaults embutidos.',
+    // Fallback opcional por variável de ambiente (sem queries hardcoded)
+    if (process.env.SEARCH_QUERIES) {
+      this.logger.log('📄 Configuração carregada via variável SEARCH_QUERIES.');
+      const queries = process.env.SEARCH_QUERIES.split(',')
+        .map((q) => q.trim())
+        .filter(Boolean);
+
+      this.config = {
+        search: {
+          queries,
+          locations: [],
+        },
+        profile: {},
+      };
+      return this.config;
+    }
+
+    throw new Error(
+      "Configuração ausente: Crie o arquivo 'jobs.config.yaml' na raiz do projeto (use 'jobs.config.example.yaml' como modelo) ou defina as variáveis necessárias.",
     );
-    this.config = this.loadFromEnvOrDefaults();
-    return this.config;
   }
 
   getQueries(): string[] {
@@ -61,8 +77,11 @@ export class JobConfigService implements OnModuleInit {
 
   getUserProfile(): UserProfileCriteria {
     return {
-      ...DEFAULT_USER_PROFILE,
-      ...(this.config.profile || {}),
+      targetRoles: this.config.profile?.targetRoles || [],
+      targetTechnologies: this.config.profile?.targetTechnologies || [],
+      acceptableLevels: this.config.profile?.acceptableLevels || [],
+      excludedLevels: this.config.profile?.excludedLevels || [],
+      locations: this.config.profile?.locations || [],
     };
   }
 
@@ -70,37 +89,48 @@ export class JobConfigService implements OnModuleInit {
     return this.config;
   }
 
-  private normalizeConfig(raw: any): AppJobConfig {
-    const defaultDefaults = this.loadFromEnvOrDefaults();
+  private validateConfig(config: AppJobConfig, configPath: string) {
+    if (!config.search?.queries || config.search.queries.length === 0) {
+      throw new Error(
+        `Configuração inválida em ${configPath}: 'search.queries' deve conter pelo menos uma query de busca.`,
+      );
+    }
+    if (!config.search?.locations || config.search.locations.length === 0) {
+      throw new Error(
+        `Configuração inválida em ${configPath}: 'search.locations' deve conter pelo menos uma localização/provedor.`,
+      );
+    }
+  }
 
+  private normalizeConfig(raw: any): AppJobConfig {
     const queries: string[] =
-      Array.isArray(raw?.search?.queries) && raw.search.queries.length > 0
+      Array.isArray(raw?.search?.queries)
         ? raw.search.queries.map((q: any) => String(q).trim()).filter(Boolean)
-        : defaultDefaults.search.queries;
+        : [];
 
     const locations: ILocationOption[] =
-      Array.isArray(raw?.search?.locations) && raw.search.locations.length > 0
+      Array.isArray(raw?.search?.locations)
         ? raw.search.locations
-        : defaultDefaults.search.locations;
+        : [];
 
     const profile: Partial<UserProfileCriteria> =
       raw?.profile && typeof raw.profile === 'object'
         ? {
             targetRoles: Array.isArray(raw.profile.targetRoles)
               ? raw.profile.targetRoles
-              : undefined,
+              : [],
             targetTechnologies: Array.isArray(raw.profile.targetTechnologies)
               ? raw.profile.targetTechnologies
-              : undefined,
+              : [],
             acceptableLevels: Array.isArray(raw.profile.acceptableLevels)
               ? raw.profile.acceptableLevels
-              : undefined,
+              : [],
             excludedLevels: Array.isArray(raw.profile.excludedLevels)
               ? raw.profile.excludedLevels
-              : undefined,
+              : [],
             locations: Array.isArray(raw.profile.locations)
               ? raw.profile.locations
-              : undefined,
+              : [],
           }
         : {};
 
@@ -110,52 +140,6 @@ export class JobConfigService implements OnModuleInit {
         locations,
       },
       profile,
-    };
-  }
-
-  private loadFromEnvOrDefaults(): AppJobConfig {
-    const envQueries = process.env.SEARCH_QUERIES
-      ? process.env.SEARCH_QUERIES.split(',')
-          .map((q) => q.trim())
-          .filter(Boolean)
-      : [
-          'desenvolvedor full-stack Júnior',
-          'desenvolvedor full-stack pleno',
-          'desenvolvedor front-end pleno',
-          'desenvolvedor react',
-          'desenvolvedor nodejs',
-        ];
-
-    return {
-      search: {
-        queries: envQueries,
-        locations: [
-          {
-            label: 'Remoto (Brasil)',
-            workplaceTypes: ['remote'],
-            locationQuery: 'trabalho-remoto',
-          },
-          {
-            provider: 'glassdoor',
-            label: 'Curitiba (Presencial/Híbrido)',
-            workplaceTypes: ['onsite', 'hybrid'],
-            locationQuery: 'curitiba-brasil',
-            providerParams: {
-              glassdoorLocationId: '2387909',
-            },
-          },
-          {
-            provider: 'linkedin',
-            label: 'São Paulo',
-            workplaceTypes: ['remote', 'onsite', 'hybrid'],
-            locationQuery: 'sao-paulo-brasil',
-            providerParams: {
-              linkedinGeoId: '103501557',
-            },
-          },
-        ],
-      },
-      profile: DEFAULT_USER_PROFILE,
     };
   }
 }
