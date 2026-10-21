@@ -1,0 +1,82 @@
+# ==============================================================================
+# JobSearchBot - Configuração Declarativa de Busca de Vagas (Self-Hosted)
+# ==============================================================================
+# Copie este arquivo para `jobs.config.yaml` e personalize as buscas e filtros.
+# O bot recarregará automaticamente estas configurações a cada execução.
+# ==============================================================================
+
+search:
+  # Termos de busca enviados aos provedores (Glassdoor, Remotar, LinkedIn)
+  queries:
+    - "desenvolvedor full-stack Júnior"
+    - "desenvolvedor full-stack pleno"
+    - "desenvolvedor front-end pleno"
+    - "desenvolvedor react"
+    - "desenvolvedor nodejs"
+
+  # Locais e modalidades alvo de busca
+  locations:
+    - label: "Remoto (Brasil)"
+      workplaceTypes:
+        - "remote"
+      locationQuery: "trabalho-remoto"
+
+    - provider: "glassdoor"
+      label: "Curitiba (Presencial/Híbrido)"
+      workplaceTypes:
+        - "onsite"
+        - "hybrid"
+      locationQuery: "curitiba-brasil"
+      providerParams:
+        glassdoorLocationId: "2387909"
+
+    - provider: "linkedin"
+      label: "São Paulo"
+      workplaceTypes:
+        - "remote"
+        - "onsite"
+        - "hybrid"
+      locationQuery: "sao-paulo-brasil"
+      providerParams:
+        linkedinGeoId: "103501557"
+
+# Critérios Semânticos para o TypeSafe Jev (Opcional - sobrescreve os defaults)
+profile:
+  targetRoles:
+    - "Desenvolvedor Full Stack Júnior"
+    - "Desenvolvedor Full Stack Pleno"
+    - "Desenvolvedor Front-end Pleno"
+    - "Desenvolvedor Back-end Júnior/Pleno"
+    - "Software Engineer Júnior/Pleno"
+
+  targetTechnologies:
+    - "React"
+    - "Node.js"
+    - "TypeScript"
+    - "JavaScript"
+    - "Next.js"
+    - "NestJS"
+    - "Python"
+    - "Docker"
+    - "PostgreSQL"
+
+  acceptableLevels:
+    - "Júnior"
+    - "Junior"
+    - "Pleno"
+    - "Mid"
+    - "Entry Level"
+
+  excludedLevels:
+    - "Sênior"
+    - "Senior"
+    - "Staff"
+    - "Tech Lead"
+    - "Especialista"
+    - "Estágio"
+    - "Estagiário"
+
+  locations:
+    - "Remoto"
+    - "Curitiba"
+    - "São Paulo"

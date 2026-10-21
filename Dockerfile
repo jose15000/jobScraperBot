@@ -56,6 +56,7 @@ ENV NODE_ENV=production
 COPY --from=prod-deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/package.json ./package.json
+COPY --from=build /usr/src/app/jobs.config*.yaml ./
 
 EXPOSE 3000
 

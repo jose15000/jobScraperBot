@@ -58,6 +58,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /context
 
 # User configuration
-jobs.config.yaml
+# jobs.config.yaml (tracked for cloud deployment)
 jobs.config.yml
 !jobs.config.example.yaml

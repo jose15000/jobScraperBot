@@ -31,10 +31,9 @@ export class JobConfigService implements OnModuleInit {
           return this.config;
         }
       } catch (err: any) {
-        this.logger.error(
-          `Erro ao parsear JOBS_CONFIG_YAML da variável de ambiente: ${err.message}`,
+        this.logger.warn(
+          `Aviso: Falha ao parsear JOBS_CONFIG_YAML da variável de ambiente (${err.message}). Tentando carregar de arquivo em disco...`,
         );
-        throw err;
       }
     }
 
@@ -54,10 +53,9 @@ export class JobConfigService implements OnModuleInit {
           return this.config;
         }
       } catch (err: any) {
-        this.logger.error(
-          `Erro ao parsear JOBS_CONFIG_BASE64 da variável de ambiente: ${err.message}`,
+        this.logger.warn(
+          `Aviso: Falha ao parsear JOBS_CONFIG_BASE64 da variável de ambiente (${err.message}). Tentando carregar de arquivo em disco...`,
         );
-        throw err;
       }
     }
 
