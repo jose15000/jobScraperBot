@@ -86,7 +86,9 @@ export class WhatsappService {
   }
 
   async sendMessage(message: SendMessageDTO) {
-    const url = `${process.env.evolutionApiUrl}/message/sendText/${message.instanceName}`;
+    const baseUrl =
+      process.env.evolutionApiUrl || process.env.EVOLUTION_API_URL;
+    const url = `${baseUrl}/message/sendText/${message.instanceName}`;
     this.logger.log(`📤 Enviando mensagem para: ${url}`);
 
     try {
@@ -105,13 +107,16 @@ export class WhatsappService {
         this.logger.error(
           `❌ Erro ao enviar mensagem (${response.status}): ${body}`,
         );
-        return;
+        throw new Error(
+          `Falha ao enviar mensagem na Evolution API (${response.status}): ${body}`,
+        );
       }
 
       this.logger.log(`✅ Mensagem enviada com sucesso!`);
       return JSON.parse(body);
     } catch (error: any) {
       this.logger.error(`❌ Fetch falhou: ${error.message}`, error.stack);
+      throw error;
     }
   }
 }

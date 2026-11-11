@@ -6,18 +6,19 @@ import { PlaywrightService } from './services/playWrightService/scrapservice.ser
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-
-  const app = await NestFactory.createApplicationContext(AppModule);
+  let app: Awaited<ReturnType<typeof NestFactory.createApplicationContext>> | undefined;
 
   try {
+    app = await NestFactory.createApplicationContext(AppModule);
     logger.log('🚀 Container iniciado — executando pipeline de scraping...');
     const taskService = app.get(TaskService);
     await taskService.runScrapeJob();
   } catch (error) {
     logger.error('❌ Erro fatal no pipeline:', error);
+    await app?.close();
     process.exit(1);
   } finally {
-    await app.close();
+    await app?.close();
     process.exit(0);
   }
 }

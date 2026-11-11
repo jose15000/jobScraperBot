@@ -11,6 +11,8 @@ services:
     environment:
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:PASSWORD@postgres:5432/postgres
+      - evolutionApiUrl=http://evolution-api:8080
+      - EVOLUTION_API_URL=http://evolution-api:8080
     restart: "no"
     volumes:
       - ./jobs.config.yaml:/usr/src/app/jobs.config.yaml:ro

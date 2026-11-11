@@ -201,6 +201,63 @@
         "description": "Fixed title and company extraction in PlaywrightService and TaskService; calibrated Jev prompt for concise postings and adjusted threshold to 50%",
         "timestamp": "2026-10-17T19:49:17.413Z"
       }
+    },
+    {
+      "graphType": "Code",
+      "id": "a447f28d-cb04-4757-b7b6-3d5fd757604e",
+      "type": "code_change",
+      "data": {
+        "file": ".env",
+        "agentThought": "fix",
+        "description": "Updated DATABASE_URL in .env to point to local Docker PostgreSQL instance instead of unreachable Railway proxy",
+        "diff": "-DATABASE_URL=postgresql://postgres:bdzlzMhnnehqTkwQWvmPZcqhazYwyMtA@metro.proxy.rlwy.net:27601/railway\n+DATABASE_URL=\"postgresql://postgres:PASSWORD@localhost:5432/postgres\"",
+        "timestamp": "2026-11-09T17:38:22.643Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "05e3bce6-7290-45c2-901b-52997bd40bdd",
+      "type": "code_change",
+      "data": {
+        "file": ".env",
+        "agentThought": "fix",
+        "description": "Updated evolutionApiUrl in .env to point to local Docker Evolution API (http://localhost:8080) instead of unreachable Railway endpoint",
+        "diff": "-evolutionApiUrl=\"https://evolution-api-production-8129.up.railway.app\"\n+evolutionApiUrl=\"http://localhost:8080\"",
+        "timestamp": "2026-11-09T18:02:28.555Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "b69f4d7a-11f7-41f3-aa81-9f129a530ed0",
+      "type": "code_change",
+      "data": {
+        "file": "src/services/whatsapp-service/whatsapp-service.service.ts",
+        "agentThought": "fix",
+        "description": "Throw error when WhatsApp message delivery fails so unsent jobs are not saved to sent_jobs; support EVOLUTION_API_URL fallback",
+        "timestamp": "2026-11-10T01:25:18.026Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "58f7cefe-1e0e-410c-9e26-be70cda29409",
+      "type": "code_change",
+      "data": {
+        "file": "docker-compose.yml",
+        "agentThought": "fix",
+        "description": "Add evolutionApiUrl and EVOLUTION_API_URL to api container environment in docker-compose.yml",
+        "timestamp": "2026-11-10T01:25:19.735Z"
+      }
+    },
+    {
+      "graphType": "Code",
+      "id": "481085d8-7c7c-4ad9-99f1-34a399669e27",
+      "type": "code_change",
+      "data": {
+        "file": "src/main.ts",
+        "agentThought": "fix",
+        "description": "Wrap NestFactory.createApplicationContext inside try/catch block in main.ts for safe error handling and cleanup",
+        "timestamp": "2026-11-10T01:25:21.704Z"
+      }
     }
   ],
   "edges": [
@@ -292,6 +349,31 @@
     {
       "from": "793a2e58-c8b2-43a9-b76b-ff8c6203f7e2",
       "to": "src/services/playWrightService/scrapservice.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "a447f28d-cb04-4757-b7b6-3d5fd757604e",
+      "to": ".env",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "05e3bce6-7290-45c2-901b-52997bd40bdd",
+      "to": ".env",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "b69f4d7a-11f7-41f3-aa81-9f129a530ed0",
+      "to": "src/services/whatsapp-service/whatsapp-service.service.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "58f7cefe-1e0e-410c-9e26-be70cda29409",
+      "to": "docker-compose.yml",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "481085d8-7c7c-4ad9-99f1-34a399669e27",
+      "to": "src/main.ts",
       "type": "MODIFIES"
     }
   ]
