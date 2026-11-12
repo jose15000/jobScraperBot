@@ -80,8 +80,8 @@ These core constraints govern the application's behavior and must **never** be v
 
 Technical context, libraries, and coding guidelines:
 
-- **Stack & Setup:** TypeScript (Strict mode), NestJS v11, Node.js (Fetch API), Docker & Docker Compose, Railway Cron.
-- **Execution Model:** One-shot standalone (no HTTP server). Railway schedules the container every 1h.
+- **Stack & Setup:** TypeScript (Strict mode), NestJS v11, Node.js (Fetch API), Docker & Docker Compose, Oracle VPS Cron (`run-bot.sh`), GitHub Actions CI/CD.
+- **Execution Model:** One-shot standalone (no HTTP server). Executed on the Oracle VPS via `run-bot.sh` scheduled in crontab (with PostgreSQL and Evolution API running in Docker).
 - **Environment Management:** 
    - The application loads configuration via NestJS `ConfigModule.forRoot()`.
    - Local development uses `.env` in the project root.
@@ -110,6 +110,8 @@ Common commands and pipeline validation tasks:
   ```bash
   sudo docker compose up -d --build api
   ```
-- **Railway Cron Deploy:**
+- **Oracle VPS CI/CD Deploy (GitHub Actions):**
+  Pushing to `main` triggers `.github/workflows/ci-cd.yml`, which validates `pnpm run build` and `pnpm test` in CI, and if successful, connects via SSH to the Oracle VPS to pull `origin/main`, install dependencies, and compile `dist/main.js` for the next cron execution (`run-bot.sh`).
+- **Railway Cron Deploy (Alternative):**
   Push to the connected branch — Railway will build the Docker image and schedule it via `railway.json` (`cronSchedule: "0 * * * *"`).
 - **Documentation Rule:** Any new integrations (e.g. Indeed) or database changes must be immediately recorded here to preserve context for future pair programmers.

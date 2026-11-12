@@ -1,0 +1,92 @@
+name: CI/CD — Build, Test & Deploy (Oracle VPS)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Validate Build & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Run unit tests
+        run: pnpm test
+
+  deploy:
+    name: Deploy to Oracle VPS
+    needs: ci
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script_stop: true
+          script: |
+            export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$PATH"
+            if ! command -v node &> /dev/null; then
+              [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
+            fi
+
+            PROJECT_DIR="${{ secrets.VPS_PROJECT_DIR || '~/jobScraperBot' }}"
+            eval PROJECT_DIR="$PROJECT_DIR"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              FOUND_DIR=$(find "$HOME" -maxdepth 4 -name "run-bot.sh" -exec dirname {} \; 2>/dev/null | head -n 1)
+              if [ -n "$FOUND_DIR" ]; then
+                PROJECT_DIR="$FOUND_DIR"
+              fi
+            fi
+
+            echo "📂 Acessando diretório do projeto: $PROJECT_DIR"
+            cd "$PROJECT_DIR"
+
+            echo "🔄 Atualizando código a partir de origin/main..."
+            git fetch origin main
+            git reset --hard origin/main
+            chmod +x run-bot.sh
+
+            echo "📦 Instalando dependências..."
+            if command -v pnpm &> /dev/null; then
+              pnpm install --frozen-lockfile || pnpm install
+              echo "🔨 Compilando build de produção (dist/main.js)..."
+              pnpm run build
+            else
+              npm install
+              echo "🔨 Compilando build de produção (dist/main.js)..."
+              npm run build
+            fi
+
+            echo "✅ Deploy finalizado com sucesso no commit $(git rev-parse --short HEAD)!"
