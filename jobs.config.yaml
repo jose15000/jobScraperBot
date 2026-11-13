@@ -40,7 +40,7 @@ search:
       providerParams:
         linkedinGeoId: "103501557"
 
-# Critérios Semânticos para o TypeSafe Jev (Opcional - sobrescreve os defaults)
+# Critérios Semânticos para o Classificador System-One (Opcional - sobrescreve os defaults)
 profile:
   targetRoles:
     - "Desenvolvedor Full Stack Júnior"
@@ -80,6 +80,10 @@ profile:
     - "Remoto"
     - "Curitiba"
     - "São Paulo"
+
+# Provedor do Classificador Semântico System-One (openrouter | groq | gemini | ollama | laya | kev | auto)
+classifier:
+  provider: "auto"
 
 # Configurações de Otimização de Currículo (Sob Demanda)
 cvOptimization:

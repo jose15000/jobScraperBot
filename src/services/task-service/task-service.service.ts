@@ -63,7 +63,15 @@ export class TaskService {
       description?: string;
     }[] = [];
 
-    // 3. Processamento, Deduplicação (Título + Empresa) e Heurística com Jev
+    // 3. Processamento e Deduplicação (Título + Empresa)
+    const uniqueCandidates: Array<{
+      title: string;
+      company: string;
+      text: string;
+      location?: string;
+      url: string;
+    }> = [];
+
     for (const post of rawPosts) {
       const text = post.text || '';
       let url = post.url || '';
@@ -129,39 +137,67 @@ export class TaskService {
       // Registra a chave para evitar repetições no mesmo ciclo de execução
       seenJobKeys.add(this.jobDeduplicationService.createKey(title, company));
 
-      // 3. Filtragem e Avaliação de Fit com o Jev
-      const result = await this.jevService.evaluateJob(
-        {
-          title,
-          text,
-          company,
-          location: post.location,
-          url,
-        },
-        userProfile,
+      uniqueCandidates.push({
+        title,
+        company,
+        text,
+        location: post.location,
+        url,
+      });
+    }
+
+    // 4. Classificação Semântica em Lote (System-One Multi-Provider)
+    if (uniqueCandidates.length > 0) {
+      this.logger.log(
+        `🧠 Classificando ${uniqueCandidates.length} vagas inéditas com o Classificador System-One...`,
       );
+      const evaluations =
+        typeof this.jevService.evaluateJobsBatch === 'function'
+          ? await this.jevService.evaluateJobsBatch(
+              uniqueCandidates,
+              userProfile,
+            )
+          : await Promise.all(
+              uniqueCandidates.map((candidate) =>
+                this.jevService.evaluateJob(candidate, userProfile),
+              ),
+            );
 
-      if (result.shouldApply) {
-        this.logger.log(
-          `✅ Vaga aprovada (score: ${result.score}): ${title} ${company ? `(${company})` : ''}`,
-        );
-        approvedJobs.push({
-          title,
-          company,
-          score: result.score,
-          reason: result.reason,
-          url,
-          previewText: text.substring(0, 150).replace(/\n/g, ' ').trim(),
-        });
+      for (let i = 0; i < uniqueCandidates.length; i++) {
+        const candidate = uniqueCandidates[i];
+        const result = evaluations[i];
+        if (!result) continue;
 
-        const newJobRecord = { url, title, company, description: text };
-        newlySentJobs.push(newJobRecord);
-        recentStoredJobs.unshift(newJobRecord);
-      } else {
-        this.logger.debug(
-          `❌ Rejeitada: ${result.reason} — ${title}`,
-          url,
-        );
+        if (result.shouldApply) {
+          this.logger.log(
+            `✅ Vaga aprovada (score: ${result.score}): ${candidate.title} ${candidate.company ? `(${candidate.company})` : ''}`,
+          );
+          approvedJobs.push({
+            title: candidate.title,
+            company: candidate.company,
+            score: result.score,
+            reason: result.reason,
+            url: candidate.url,
+            previewText: candidate.text
+              .substring(0, 150)
+              .replace(/\n/g, ' ')
+              .trim(),
+          });
+
+          const newJobRecord = {
+            url: candidate.url,
+            title: candidate.title,
+            company: candidate.company,
+            description: candidate.text,
+          };
+          newlySentJobs.push(newJobRecord);
+          recentStoredJobs.unshift(newJobRecord);
+        } else {
+          this.logger.debug(
+            `❌ Rejeitada: ${result.reason} — ${candidate.title}`,
+            candidate.url,
+          );
+        }
       }
     }
 

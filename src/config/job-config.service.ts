@@ -6,6 +6,7 @@ import { AppJobConfig } from '../interfaces/job-config/job-config.interface';
 import { UserProfileCriteria } from '../utils/jev';
 import { ILocationOption } from '../interfaces/isearch/isearch.interface';
 import { BaseCvData, CvOptimizationConfig } from '../interfaces/cv/cv.interface';
+import { ClassifierProviderConfig } from '../services/jev/classifier-providers';
 
 @Injectable()
 export class JobConfigService implements OnModuleInit {
@@ -217,6 +218,21 @@ export class JobConfigService implements OnModuleInit {
     return this.config;
   }
 
+  getClassifierConfig(): Partial<ClassifierProviderConfig> {
+    return {
+      provider:
+        (process.env.CLASSIFIER_PROVIDER as any) ||
+        this.config?.classifier?.provider ||
+        'auto',
+      model:
+        process.env.CLASSIFIER_MODEL ||
+        this.config?.classifier?.model,
+      baseUrl:
+        process.env.CLASSIFIER_BASE_URL ||
+        this.config?.classifier?.baseUrl,
+    };
+  }
+
   getCvOptimizationConfig(): CvOptimizationConfig {
     return {
       openRouterModel:
@@ -311,6 +327,15 @@ export class JobConfigService implements OnModuleInit {
           }
         : {};
 
+    const classifier: Partial<ClassifierProviderConfig> =
+      raw?.classifier && typeof raw.classifier === 'object'
+        ? {
+            provider: raw.classifier.provider,
+            model: raw.classifier.model,
+            baseUrl: raw.classifier.baseUrl,
+          }
+        : {};
+
     const cvOptimization: Partial<CvOptimizationConfig> =
       raw?.cvOptimization && typeof raw.cvOptimization === 'object'
         ? {
@@ -325,6 +350,7 @@ export class JobConfigService implements OnModuleInit {
         locations,
       },
       profile,
+      classifier,
       cvOptimization,
     };
   }

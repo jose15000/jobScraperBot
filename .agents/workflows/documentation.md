@@ -47,7 +47,7 @@ src/
    - **`JobConfigService`**: Solely handles loading, parsing, and normalizing user search queries and semantic profiles from `jobs.config.yaml` or `.env`.
    - **`JobHistoryRepository`**: Solely handles persistent storage and querying of sent jobs using **Drizzle ORM**.
    - **`JobDeduplicationService`**: Solely handles title and company normalization and duplicate filtering.
-   - **`JevService`**: Handles semantic job fit evaluation via TypeSafe Jev.
+   - **`JevService` + `classifier-providers.ts`**: Handles semantic job fit and CV evaluation using the native **Multi-Provider System-One Classifier** (`openrouter`, `groq`, `gemini`, `ollama`, `laya`, `kev`, or `jev` HTTP) with rubric compression and batch evaluation (`evaluateJobsBatch`) to minimize input/output tokens and require zero proprietary SDK dependencies.
    - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages (with `[#ID]` badges for on-demand CV generation).
    - **`CvOptimizationService` / `CvLlmService` / `TypstTemplateService` / `TypstCompilerService`**: Handles on-demand ATS resume tailoring from `cv.base.yaml` using OpenRouter, semantic verification with TypeSafe Jev, ultra-fast PDF compilation via Typst (`typst` CLI), and direct PDF delivery to WhatsApp via Evolution API (`sendMediaDocument`).
    - **`ScrapserviceService`**: Handles low-level LinkedIn scraper HTTP request logic.
