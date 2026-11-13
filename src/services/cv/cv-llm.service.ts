@@ -106,6 +106,10 @@ export class CvLlmService {
     const parsed = JSON.parse(jsonCandidate) as Partial<CvTailoredPatchDto>;
 
     return {
+      headline:
+        typeof parsed.headline === 'string' && parsed.headline.trim().length > 0
+          ? parsed.headline.trim()
+          : fallbackBase.headline,
       summary:
         typeof parsed.summary === 'string' && parsed.summary.trim().length > 0
           ? parsed.summary.trim()
@@ -131,6 +135,7 @@ export class CvLlmService {
               const orig = fallbackBase.projects[idx];
               return {
                 name: orig?.name || proj.name || 'Projeto',
+                techStack: proj.techStack || orig?.techStack,
                 link: orig?.link || proj.link,
                 dates: orig?.dates || proj.dates,
                 description: Array.isArray(proj.description)

@@ -13,10 +13,10 @@ import {
 const DEFAULT_SECTION_TITLES: CvSectionTitles = {
   summary: 'Resumo Profissional',
   experience: 'Experiência Profissional',
-  projects: 'Projetos Relevantes',
-  technologies: 'Tecnologias & Habilidades',
-  education: 'Formação Acadêmica',
-  languages: 'Idiomas',
+  projects: 'Projetos',
+  education: 'Educação',
+  technologies: 'Habilidades Técnicas',
+  languages: 'Certificações e Idiomas',
 };
 
 @Injectable()
@@ -57,7 +57,7 @@ export class TypstTemplateService {
 
   /**
    * Merges immutable fields from BaseCvData with the LLM tailored patch.
-   * Ensures name, contact, education, and languages are strictly preserved.
+   * Ensures name, contact, education, languages, and certifications are strictly preserved.
    */
   mergeBaseWithPatch(
     baseCv: BaseCvData,
@@ -73,8 +73,13 @@ export class TypstTemplateService {
       contact: { ...baseCv.contact },
       education: baseCv.education,
       languages: baseCv.languages,
+      certifications: baseCv.certifications,
 
       // Tailorable fields with safe fallback to baseCv
+      headline:
+        patch.headline && patch.headline.trim().length > 0
+          ? patch.headline.trim()
+          : baseCv.headline,
       summary:
         patch.summary && patch.summary.trim().length > 0
           ? patch.summary.trim()
@@ -101,7 +106,7 @@ export class TypstTemplateService {
 
   /**
    * Builds a complete, self-contained, ATS-readable Typst (.typ) document
-   * styled after RenderCV / JobEZ template.tex.
+   * matching the layout of Jose_Henrique_CV_Programador_Pleno.pdf.
    */
   renderTypstDocument(
     cvData: BaseCvData,
@@ -120,39 +125,63 @@ export class TypstTemplateService {
     if (cvData.contact?.email) {
       const emailUrl = `mailto:${this.escapeTypstStringLiteral(cvData.contact.email)}`;
       contactParts.push(
-        `#link("${emailUrl}")[${this.escapeTypst(cvData.contact.email)}]`,
+        `#underline[#link("${emailUrl}")[${this.escapeTypst(cvData.contact.email)}]]`,
       );
     }
     if (cvData.contact?.phone) {
       contactParts.push(this.escapeTypst(cvData.contact.phone));
     }
-    if (cvData.contact?.location) {
-      contactParts.push(this.escapeTypst(cvData.contact.location));
-    }
     if (cvData.contact?.linkedin) {
+      const linkedinClean = cvData.contact.linkedin.replace(
+        /^https?:\/\/(www\.)?/,
+        '',
+      );
       const linkedinHref = cvData.contact.linkedin.startsWith('http')
         ? cvData.contact.linkedin
         : `https://${cvData.contact.linkedin}`;
       contactParts.push(
-        `#link("${this.escapeTypstStringLiteral(linkedinHref)}")[LinkedIn]`,
+        `#underline[#link("${this.escapeTypstStringLiteral(linkedinHref)}")[${this.escapeTypst(linkedinClean)}]]`,
       );
     }
     if (cvData.contact?.github) {
+      const githubClean = cvData.contact.github.replace(
+        /^https?:\/\/(www\.)?/,
+        '',
+      );
       const githubHref = cvData.contact.github.startsWith('http')
         ? cvData.contact.github
         : `https://${cvData.contact.github}`;
       contactParts.push(
-        `#link("${this.escapeTypstStringLiteral(githubHref)}")[GitHub]`,
+        `#underline[#link("${this.escapeTypstStringLiteral(githubHref)}")[${this.escapeTypst(githubClean)}]]`,
+      );
+    }
+    if (cvData.contact?.website) {
+      const webClean = cvData.contact.website.replace(
+        /^https?:\/\/(www\.)?/,
+        '',
+      );
+      const webHref = cvData.contact.website.startsWith('http')
+        ? cvData.contact.website
+        : `https://${cvData.contact.website}`;
+      contactParts.push(
+        `#underline[#link("${this.escapeTypstStringLiteral(webHref)}")[${this.escapeTypst(webClean)}]]`,
       );
     }
 
+    const headlineLine = cvData.headline
+      ? `\n  #v(-4pt)\n  #text(size: 10pt)[${this.escapeTypst(cvData.headline)}]`
+      : '';
+
     const experienceBlock = this.renderExperience(cvData.experience || []);
     const projectsBlock = this.renderProjects(cvData.projects || []);
+    const educationBlock = this.renderEducation(cvData.education || []);
     const technologiesBlock = this.renderTechnologies(
       cvData.technologies || {},
     );
-    const educationBlock = this.renderEducation(cvData.education || []);
-    const languagesBlock = this.renderLanguages(cvData.languages || []);
+    const languagesBlock = this.renderCertificationsAndLanguages(
+      cvData.certifications || [],
+      cvData.languages || [],
+    );
 
     return `#set document(
   title: "${this.escapeTypstStringLiteral(docTitle)}",
@@ -161,7 +190,7 @@ export class TypstTemplateService {
 
 #set page(
   paper: "a4",
-  margin: (top: 1.6cm, bottom: 1.6cm, left: 1.8cm, right: 1.8cm),
+  margin: (top: 1.5cm, bottom: 1.5cm, left: 1.6cm, right: 1.6cm),
 )
 
 #set text(
@@ -171,15 +200,15 @@ export class TypstTemplateService {
 )
 
 #set par(
-  justify: true,
-  leading: 0.55em,
+  justify: false,
+  leading: 0.52em,
 )
 
 #let section-header(title) = {
   v(6pt)
-  text(size: 11.5pt, weight: "bold")[#title]
+  text(size: 11pt, weight: "regular")[#smallcaps[#title]]
   v(-6pt)
-  line(length: 100%, stroke: 0.6pt + rgb("#000000"))
+  line(length: 100%, stroke: 0.5pt + rgb("#000000"))
   v(2pt)
 }
 
@@ -194,9 +223,9 @@ export class TypstTemplateService {
 }
 
 #align(center)[
-  #text(size: 21pt, weight: "bold")[${this.escapeTypst(cvData.name)}]
-  #v(-4pt)
-  #text(size: 9.5pt)[${contactParts.join('  |  ')}]
+  #text(size: 22pt, weight: "bold")[${this.escapeTypst(cvData.name)}]${headlineLine}
+  #v(-3pt)
+  #text(size: 9.5pt)[${contactParts.join(' | ')}]
 ]
 
 #v(2pt)
@@ -210,11 +239,11 @@ ${experienceBlock}
 #section-header("${this.escapeTypstStringLiteral(titles.projects)}")
 ${projectsBlock}
 
-#section-header("${this.escapeTypstStringLiteral(titles.technologies)}")
-${technologiesBlock}
-
 #section-header("${this.escapeTypstStringLiteral(titles.education)}")
 ${educationBlock}
+
+#section-header("${this.escapeTypstStringLiteral(titles.technologies)}")
+${technologiesBlock}
 
 #section-header("${this.escapeTypstStringLiteral(titles.languages)}")
 ${languagesBlock}
@@ -226,23 +255,17 @@ ${languagesBlock}
 
     return items
       .map((exp) => {
-        const companyAndLoc = [
-          exp.company ? this.escapeTypst(exp.company) : '',
-          exp.location ? this.escapeTypst(exp.location) : '',
-        ]
-          .filter(Boolean)
-          .join(' -- ');
-
-        const headerLeft = companyAndLoc
-          ? `*${this.escapeTypst(exp.title)}*, ${companyAndLoc}`
-          : `*${this.escapeTypst(exp.title)}*`;
+        const row1 = `#twocol([*${this.escapeTypst(exp.title)}*], [${this.escapeTypst(exp.dates)}])`;
+        const row2 = `#twocol([_${this.escapeTypst(exp.company)}_], [_${this.escapeTypst(exp.location)}_])`;
 
         const bullets = (exp.description || [])
           .filter(Boolean)
           .map((bullet) => `- ${this.escapeTypst(bullet)}`)
           .join('\n');
 
-        return `#twocol([${headerLeft}], [${this.escapeTypst(exp.dates)}])
+        return `${row1}
+#v(-4pt)
+${row2}
 #v(-2pt)
 ${bullets}
 #v(4pt)`;
@@ -256,11 +279,13 @@ ${bullets}
     return items
       .map((proj) => {
         let titlePart = `*${this.escapeTypst(proj.name)}*`;
-        if (proj.link) {
+        if (proj.techStack) {
+          titlePart += ` | _${this.escapeTypst(proj.techStack)}_`;
+        } else if (proj.link) {
           const href = proj.link.startsWith('http')
             ? proj.link
             : `https://${proj.link}`;
-          titlePart += ` | #link("${this.escapeTypstStringLiteral(href)}")[GitHub / Link]`;
+          titlePart += ` | #link("${this.escapeTypstStringLiteral(href)}")[GitHub]`;
         }
 
         const datesPart = proj.dates ? this.escapeTypst(proj.dates) : '';
@@ -277,47 +302,72 @@ ${bullets}
       .join('\n\n');
   }
 
+  private renderEducation(items: CvEducationItem[]): string {
+    if (!items || items.length === 0) return '';
+
+    return items
+      .map((edu) => {
+        const loc = edu.location ? this.escapeTypst(edu.location) : 'Brasil';
+        return `#twocol([*${this.escapeTypst(edu.institution)}*], [${loc}])
+#v(-4pt)
+#twocol([_${this.escapeTypst(edu.degree)}_], [_${this.escapeTypst(edu.dates)}_])`;
+      })
+      .join('\n#v(3pt)\n');
+  }
+
   private renderTechnologies(tech: CvTechnologies): string {
     const lines: string[] = [];
     if (tech.languages) {
       lines.push(`*Linguagens:* ${this.escapeTypst(tech.languages)}`);
     }
     if (tech.frontend) {
-      lines.push(`*Front-End:* ${this.escapeTypst(tech.frontend)}`);
+      lines.push(`*Frontend:* ${this.escapeTypst(tech.frontend)}`);
     }
     if (tech.backend) {
-      lines.push(`*Back-End:* ${this.escapeTypst(tech.backend)}`);
+      lines.push(`*Backend:* ${this.escapeTypst(tech.backend)}`);
     }
     if (tech.databases) {
       lines.push(`*Bancos de Dados:* ${this.escapeTypst(tech.databases)}`);
     }
     if (tech.devops) {
-      lines.push(`*DevOps & Ferramentas:* ${this.escapeTypst(tech.devops)}`);
+      lines.push(`*Cloud & DevOps:* ${this.escapeTypst(tech.devops)}`);
+    }
+    if (tech.aiAndTools) {
+      lines.push(`*IA & Ferramentas:* ${this.escapeTypst(tech.aiAndTools)}`);
+    }
+    if (tech.practices) {
+      lines.push(`*Práticas:* ${this.escapeTypst(tech.practices)}`);
     }
     return lines.join(' \\\n');
   }
 
-  private renderEducation(items: CvEducationItem[]): string {
-    if (!items || items.length === 0) return '';
+  private renderCertificationsAndLanguages(
+    certifications: string[],
+    items: CvLanguageItem[],
+  ): string {
+    const lines: string[] = [];
 
-    return items
-      .map(
-        (edu) =>
-          `#twocol([*${this.escapeTypst(edu.institution)}*, ${this.escapeTypst(edu.degree)}], [${this.escapeTypst(edu.dates)}])`,
-      )
-      .join('\n#v(2pt)\n');
-  }
+    for (const cert of certifications) {
+      const parts = cert.split('–');
+      if (parts.length > 1) {
+        lines.push(
+          `*${this.escapeTypst(parts[0].trim())}* – ${this.escapeTypst(parts.slice(1).join('–').trim())}`,
+        );
+      } else {
+        lines.push(this.escapeTypst(cert));
+      }
+    }
 
-  private renderLanguages(items: CvLanguageItem[]): string {
-    if (!items || items.length === 0) return '';
+    if (items && items.length > 0) {
+      const langLine = items
+        .map(
+          (lang) =>
+            `*${this.escapeTypst(lang.language)}:* ${this.escapeTypst(lang.level)}`,
+        )
+        .join(' | ');
+      lines.push(langLine);
+    }
 
-    return items
-      .map((lang) => {
-        const rightText = lang.certification
-          ? this.escapeTypst(lang.certification)
-          : '';
-        return `#twocol([*${this.escapeTypst(lang.language)}* — ${this.escapeTypst(lang.level)}], [${rightText}])`;
-      })
-      .join('\n#v(2pt)\n');
+    return lines.join(' \\\n');
   }
 }

@@ -16,7 +16,7 @@ describe('CV Optimization Pipeline Services', () => {
   beforeAll(() => {
     templateService = new TypstTemplateService();
     compilerService = new TypstCompilerService();
-    const cvYamlPath = path.resolve(process.cwd(), 'cv.base.yaml');
+    const cvYamlPath = path.resolve(process.cwd(), 'cv.base.example.yaml');
     sampleBaseCv = YAML.parse(
       fs.readFileSync(cvYamlPath, 'utf8'),
     ) as BaseCvData;
@@ -53,14 +53,14 @@ describe('CV Optimization Pipeline Services', () => {
       );
     });
 
-    it('should compile cv.base.yaml into a valid PDF buffer using Typst', async () => {
+    it('should compile cv.base.example.yaml into a valid PDF buffer using Typst', async () => {
       const typstDoc = templateService.renderTypstDocument(sampleBaseCv, {
         title: 'Desenvolvedor Full Stack Pleno',
         company: 'Acme Tech',
       });
 
-      expect(typstDoc).toContain('José Henrique');
-      expect(typstDoc).toContain('GoWork Digital');
+      expect(typstDoc).toContain(sampleBaseCv.name);
+      expect(typstDoc).toContain(sampleBaseCv.experience[0].company);
 
       const pdfBuffer = await compilerService.compileToPdfBuffer(typstDoc);
       expect(Buffer.isBuffer(pdfBuffer)).toBe(true);
@@ -204,14 +204,14 @@ describe('CV Optimization Pipeline Services', () => {
 
       const res = await cvOptService.optimizeForStoredJobId(42);
 
-      expect(res.fileName).toBe('Curriculo_Jose_Henrique_TechCorp.pdf');
+      expect(res.fileName).toContain('TechCorp.pdf');
       expect(res.pdfBuffer.subarray(0, 4).toString('ascii')).toBe('%PDF');
       expect(mockBotService.sendMediaDocument).toHaveBeenCalledTimes(1);
       expect(mockBotService.sendMediaDocument).toHaveBeenCalledWith(
         expect.objectContaining({
           instanceName: 'job-bot',
           number: '5579988043018',
-          fileName: 'Curriculo_Jose_Henrique_TechCorp.pdf',
+          fileName: res.fileName,
         }),
       );
     });

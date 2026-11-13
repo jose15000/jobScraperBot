@@ -59,12 +59,13 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           OPEN_ROUTER_KEY_SECRET: ${{ secrets.OPEN_ROUTER_API_KEY }}
+          CV_BASE_BASE64_SECRET: ${{ secrets.CV_BASE_BASE64 }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
-          envs: OPEN_ROUTER_KEY_SECRET
+          envs: OPEN_ROUTER_KEY_SECRET,CV_BASE_BASE64_SECRET
           script_stop: true
           script: |
             export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$PATH"
@@ -116,6 +117,11 @@ jobs:
                 echo "OPEN_ROUTER_API_KEY=$OPEN_ROUTER_KEY_SECRET" >> .env
               fi
               echo "🔑 OPEN_ROUTER_API_KEY sincronizada no .env da VPS."
+            fi
+
+            if [ -n "$CV_BASE_BASE64_SECRET" ]; then
+              echo "$CV_BASE_BASE64_SECRET" | base64 -d > cv.base.yaml
+              echo "📄 cv.base.yaml sincronizado via secret na VPS."
             fi
 
             echo "🎧 Reiniciando listener de comandos WhatsApp (/cv)..."

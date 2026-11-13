@@ -1,60 +1,67 @@
 # ==============================================================================
 # JobSearchBot - Exemplo de Currículo Base Declarativo (cv.base.example.yaml)
 # ==============================================================================
-# Copie este arquivo para `cv.base.yaml` e preencha com os seus dados reais.
+# Copie este arquivo para `cv.base.yaml` (ignorado pelo Git) e preencha com os
+# seus dados reais.
 # ==============================================================================
 
 name: "Seu Nome Completo"
+headline: "Desenvolvedor Full Stack Pleno | JavaScript · TypeScript · Node.js · React"
 
 contact:
   email: "seu.email@exemplo.com"
-  phone: "+55 11 99999-9999"
-  location: "Cidade, UF, Brasil"
-  linkedin: "https://linkedin.com/in/seu-perfil"
-  github: "https://github.com/seu-usuario"
+  linkedin: "linkedin.com/in/seu-perfil"
+  github: "github.com/seu-usuario"
+  website: "seusite.dev"
 
 summary: >
-  Desenvolvedor Full Stack com experiência no desenvolvimento de aplicações web
-  utilizando React, Next.js, TypeScript, Node.js e NestJS.
+  Desenvolvedor Full Stack com mais de 2 anos de experiência construindo e mantendo
+  aplicações web em produção com JavaScript, TypeScript, Node.js, React e PostgreSQL.
 
 experience:
   - title: "Desenvolvedor Full Stack Júnior"
     company: "Empresa Exemplo"
-    location: "Remoto"
-    dates: "Jan 2024 – Presente"
+    location: "Brasil"
+    dates: "Junho 2024 – Presente"
     description:
-      - "Desenvolvimento e manutenção de APIs REST com Node.js, NestJS e PostgreSQL."
-      - "Implementação de interfaces responsivas com React, Next.js e TypeScript."
+      - "Desenvolveu e manteve aplicações web em produção com React, Next.js, TypeScript e Node.js."
+      - "Implementou APIs REST, webhooks e integrações com serviços de terceiros."
 
 projects:
-  - name: "Projeto Destaque"
-    link: "https://github.com/seu-usuario/projeto"
+  - name: "Projeto SaaS"
+    techStack: "React, Next.js, TypeScript, Node.js, PostgreSQL"
     dates: "2025"
     description:
-      - "Aplicação Full Stack construída com Next.js, NestJS, Docker e PostgreSQL."
+      - "Projetou e construiu uma aplicação SaaS full-stack com autenticação, filas assíncronas e Docker."
 
 education:
   - institution: "Universidade Exemplo"
     degree: "Bacharelado em Ciência da Computação"
+    location: "Brasil"
     dates: "2021 – 2025"
 
-languages:
-  - language: "Português"
-    level: "Nativo"
-  - language: "Inglês"
-    level: "B2"
-
 technologies:
-  languages: "TypeScript, JavaScript, Python"
-  frontend: "React.js, Next.js, Tailwind CSS"
-  backend: "Node.js, NestJS, APIs REST"
-  databases: "PostgreSQL, MongoDB, Redis"
-  devops: "Docker, Git, GitHub Actions (CI/CD)"
+  languages: "JavaScript (ES6+), TypeScript, Python"
+  frontend: "React, Next.js, HTML5, CSS3, Tailwind CSS"
+  backend: "Node.js, NestJS, APIs REST, Redis, BullMQ"
+  databases: "PostgreSQL, MongoDB, Prisma"
+  devops: "Docker, Docker Compose, CI/CD, AWS, Vercel"
+  aiAndTools: "OpenAI APIs, Anthropic/Claude APIs, LLMs, RAG"
+  practices: "Git, GitHub, Pull Requests, Code Review, Clean Code, SOLID"
+
+certifications:
+  - "Cambridge First Certificate in English (FCE) – Nível B2"
+
+languages:
+  - language: "Inglês"
+    level: "proficiência profissional"
+  - language: "Português"
+    level: "nativo"
 
 sectionTitles:
   summary: "Resumo Profissional"
   experience: "Experiência Profissional"
-  projects: "Projetos Relevantes"
-  technologies: "Tecnologias & Habilidades"
-  education: "Formação Acadêmica"
-  languages: "Idiomas"
+  projects: "Projetos"
+  education: "Educação"
+  technologies: "Habilidades Técnicas"
+  languages: "Certificações e Idiomas"

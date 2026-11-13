@@ -1,9 +1,10 @@
 export interface CvContactInfo {
   email: string;
-  phone: string;
-  location: string;
+  phone?: string;
+  location?: string;
   linkedin: string;
   github: string;
+  website?: string;
 }
 
 export interface CvExperienceItem {
@@ -16,6 +17,7 @@ export interface CvExperienceItem {
 
 export interface CvProjectItem {
   name: string;
+  techStack?: string;
   link?: string;
   dates?: string;
   description: string[];
@@ -24,6 +26,7 @@ export interface CvProjectItem {
 export interface CvEducationItem {
   institution: string;
   degree: string;
+  location?: string;
   dates: string;
 }
 
@@ -39,6 +42,8 @@ export interface CvTechnologies {
   backend?: string;
   databases?: string;
   devops?: string;
+  aiAndTools?: string;
+  practices?: string;
 }
 
 export interface CvSectionTitles {
@@ -52,21 +57,24 @@ export interface CvSectionTitles {
 
 export interface BaseCvData {
   name: string;
+  headline?: string;
   contact: CvContactInfo;
   summary: string;
   experience: CvExperienceItem[];
   projects: CvProjectItem[];
   education: CvEducationItem[];
   languages: CvLanguageItem[];
+  certifications?: string[];
   technologies: CvTechnologies;
   sectionTitles?: Partial<CvSectionTitles>;
 }
 
 /**
  * Only the mutable sections that the LLM is allowed to tailor for a target job.
- * Immutable fields (name, contact, education, languages) are preserved from BaseCvData in code.
+ * Immutable fields (name, contact, education, languages, certifications) are preserved from BaseCvData in code.
  */
 export interface CvTailoredPatchDto {
+  headline?: string;
   summary: string;
   experience: CvExperienceItem[];
   projects: CvProjectItem[];

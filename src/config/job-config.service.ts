@@ -236,6 +236,11 @@ export class JobConfigService implements OnModuleInit {
       return YAML.parse(envCvYaml) as BaseCvData;
     }
 
+    if (process.env.CV_BASE_BASE64 && process.env.CV_BASE_BASE64.trim().length > 0) {
+      const decoded = Buffer.from(process.env.CV_BASE_BASE64, 'base64').toString('utf8');
+      return YAML.parse(decoded) as BaseCvData;
+    }
+
     const { baseCvPath } = this.getCvOptimizationConfig();
     const candidatePaths = [
       path.isAbsolute(baseCvPath)

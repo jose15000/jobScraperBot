@@ -14,6 +14,7 @@ export function buildAtsCvOptimizationPrompt(
   },
 ): LlmChatMessage[] {
   const mutableBasePayload = {
+    headline: baseCv.headline,
     summary: baseCv.summary,
     experience: baseCv.experience,
     projects: baseCv.projects,
@@ -27,22 +28,20 @@ Seu objetivo é adaptar cirurgicamente as seções fornecidas do currículo do c
 
 ### REGRAS ABSOLUTAS (NÃO NEGOCIÁVEIS):
 1. Preservação Factual:
-   - Mantenha exatamente as mesmas empresas, períodos (dates) e projetos reais do candidato.
-   - Você pode ajustar levemente o título do cargo (ex: "Engenheiro de Software" / "Desenvolvedor Full Stack" / "Desenvolvedor Front-End") para alinhar à nomenclatura da vaga, evitando rótulos redutores se a vaga não os exigir.
+   - Mantenha exatamente as mesmas empresas, períodos (dates) e os 4 projetos reais do candidato.
+   - Ajuste o campo "headline" (título principal abaixo do nome) para refletir o título da vaga alvo e as principais stacks pedidas na vaga.
+   - Você pode ajustar levemente o título das experiências principais (ex: "Desenvolvedor Full Stack" / "Engenheiro de Software" / "Desenvolvedor Frontend/Backend") para alinhar à vaga.
 2. Extração e Densidade Controlada de Palavras-Chave (ATS):
-   - Identifique de 5 a 8 palavras-chave técnicas obrigatórias da vaga (linguagens, frameworks, bancos, arquitetura, práticas).
+   - Identifique de 5 a 8 palavras-chave técnicas obrigatórias da vaga (linguagens, frameworks, bancos, mensageria, cloud, arquitetura, práticas).
    - Inclua essas palavras-chave de forma natural:
-     a) No "summary" (resumo profissional);
-     b) No primeiro bullet ("description[0]") da experiência mais relevante, descrevendo ação técnica e impacto concreto;
-     c) Na seção "technologies", priorizando na frente as tecnologias exigidas na vaga.
-   - Caso uma tecnologia exigida pela vaga não seja a stack principal de uma experiência anterior, integre-a com honestidade técnica nos projetos ou tecnologias (ou como exposição prática / integração).
-3. Requisitos Transversais:
-   - Se a vaga mencionar APIs REST, testes automatizados, Git, CI/CD, Docker, Clean Code, SOLID ou metodologias ágeis (Scrum/Kanban), garanta que esses termos constem literalmente nos bullets e habilidades.
-4. Idioma:
+     a) No "headline" e no "summary" (resumo profissional);
+     b) Nos primeiros bullets ("description") das experiências mais relevantes (GoWork Digital e The Public House), descrevendo ação técnica e impacto concreto;
+     c) Na seção "technologies", priorizando na frente as tecnologias exigidas na vaga em cada categoria ("languages", "frontend", "backend", "databases", "devops", "aiAndTools", "practices").
+3. Idioma:
    - O JSON de saída DEVE seguir integralmente o idioma da descrição da vaga:
-     * Se a vaga estiver em português -> gere todo o texto e "sectionTitles" em português.
-     * Se a vaga estiver em inglês -> traduza todo o texto, períodos e "sectionTitles" ("Summary", "Professional Experience", "Projects", "Technical Skills", "Education", "Languages") para inglês profissional.
-5. Formato de Saída:
+     * Se a vaga estiver em português -> gere todo o texto e "sectionTitles" em português ("Resumo Profissional", "Experiência Profissional", "Projetos", "Educação", "Habilidades Técnicas", "Certificações e Idiomas").
+     * Se a vaga estiver em inglês -> traduza todo o texto, períodos e "sectionTitles" ("Professional Summary", "Professional Experience", "Projects", "Education", "Technical Skills", "Certifications & Languages") para inglês profissional.
+4. Formato de Saída:
    - Retorne EXCLUSIVAMENTE um objeto JSON válido (sem blocos markdown, sem comentários e sem texto antes ou depois) seguindo exatamente a estrutura solicitada.`;
 
   const userPrompt = `### DADOS DA VAGA ALVO:
@@ -56,6 +55,7 @@ ${JSON.stringify(mutableBasePayload, null, 2)}
 
 Retorne APENAS o JSON atualizado no formato exato abaixo:
 {
+  "headline": "Título da Vaga | Stack 1 · Stack 2 · Stack 3 · Stack 4",
   "summary": "Resumo profissional otimizado para a vaga...",
   "experience": [
     {
@@ -72,7 +72,7 @@ Retorne APENAS o JSON atualizado no formato exato abaixo:
   "projects": [
     {
       "name": "Nome do projeto original",
-      "link": "URL original",
+      "techStack": "Stacks do projeto destacadas para a vaga",
       "dates": "Data original",
       "description": [
         "Bullet destacando tecnologias relevantes para a vaga..."
@@ -84,15 +84,17 @@ Retorne APENAS o JSON atualizado no formato exato abaixo:
     "frontend": "Lista priorizada...",
     "backend": "Lista priorizada...",
     "databases": "Lista priorizada...",
-    "devops": "Lista priorizada..."
+    "devops": "Lista priorizada...",
+    "aiAndTools": "Lista priorizada...",
+    "practices": "Lista priorizada..."
   },
   "sectionTitles": {
     "summary": "Resumo Profissional",
     "experience": "Experiência Profissional",
-    "projects": "Projetos Relevantes",
-    "technologies": "Tecnologias & Habilidades",
-    "education": "Formação Acadêmica",
-    "languages": "Idiomas"
+    "projects": "Projetos",
+    "education": "Educação",
+    "technologies": "Habilidades Técnicas",
+    "languages": "Certificações e Idiomas"
   }
 }`;
 
