@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Logger, Optional, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Optional,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { PlaywrightService } from './services/playWrightService/scrapservice.service';
 import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
@@ -51,7 +59,10 @@ export class AppController {
       return { status: 'ignored', reason: 'CvOptimizationService unavailable' };
     }
 
-    const messageData = payload?.data?.message || payload?.message || {};
+    const eventData = Array.isArray(payload?.data)
+      ? payload.data[0]
+      : payload?.data || payload;
+    const messageData = eventData?.message || payload?.message || {};
     const text =
       messageData?.conversation ||
       messageData?.extendedTextMessage?.text ||
@@ -64,18 +75,50 @@ export class AppController {
     }
 
     const remoteJid: string =
-      payload?.data?.key?.remoteJid || payload?.number || '';
-    const senderNumber =
-      remoteJid.split('@')[0]?.replace(/\D/g, '') ||
-      process.env.WHATSAPP_NUMBER;
+      eventData?.key?.remoteJid || payload?.number || '';
+    const isValidPhoneJid = remoteJid.endsWith('@s.whatsapp.net');
+    const senderNumber = isValidPhoneJid
+      ? remoteJid.split('@')[0]?.replace(/\D/g, '') ||
+        process.env.WHATSAPP_NUMBER
+      : process.env.WHATSAPP_NUMBER;
+
+    const instanceName =
+      payload?.instance || process.env.INSTANCE_NAME || 'job-bot';
 
     this.logger.log(
       `📥 Comando de currículo recebido via WhatsApp: ${JSON.stringify(command)}`,
     );
 
-    if (command.type === 'jobId') {
-      const result = await this.cvOptimizationService.optimizeForStoredJobId(
-        command.jobId,
+    if (senderNumber && instanceName) {
+      const targetLabel =
+        command.type === 'jobId'
+          ? `vaga [#${command.jobId}]`
+          : 'descrição/link enviado';
+      await this.whatsappService
+        .sendMessage({
+          instanceName,
+          number: senderNumber,
+          text: `⏳ *Adaptando seu currículo para a ${targetLabel}...*\nAnalisando requisitos ATS e compilando PDF com Typst.`,
+          delay: 500,
+        })
+        .catch(() => undefined);
+    }
+
+    try {
+      if (command.type === 'jobId') {
+        const result = await this.cvOptimizationService.optimizeForStoredJobId(
+          command.jobId,
+          { sendWhatsapp: true, recipientNumber: senderNumber },
+        );
+        return {
+          status: 'completed',
+          fileName: result.fileName,
+          evaluation: result.evaluation,
+        };
+      }
+
+      const result = await this.cvOptimizationService.optimizeForCustomInput(
+        command.input,
         { sendWhatsapp: true, recipientNumber: senderNumber },
       );
       return {
@@ -83,16 +126,22 @@ export class AppController {
         fileName: result.fileName,
         evaluation: result.evaluation,
       };
+    } catch (error: any) {
+      const errMsg = error?.message || String(error);
+      this.logger.error(
+        `❌ Erro ao processar comando /cv no WhatsApp: ${errMsg}`,
+      );
+      if (senderNumber && instanceName) {
+        await this.whatsappService
+          .sendMessage({
+            instanceName,
+            number: senderNumber,
+            text: `❌ *Não foi possível gerar o currículo:*\n${errMsg}`,
+            delay: 500,
+          })
+          .catch(() => undefined);
+      }
+      return { status: 'error', message: errMsg };
     }
-
-    const result = await this.cvOptimizationService.optimizeForCustomInput(
-      command.input,
-      { sendWhatsapp: true, recipientNumber: senderNumber },
-    );
-    return {
-      status: 'completed',
-      fileName: result.fileName,
-      evaluation: result.evaluation,
-    };
   }
 }

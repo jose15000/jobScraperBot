@@ -6,6 +6,61 @@ import { Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
+async function registerEvolutionWebhook(port: number, logger: Logger) {
+  const baseUrl =
+    process.env.evolutionApiUrl ||
+    process.env.EVOLUTION_API_URL ||
+    'http://localhost:8080';
+  const apiKey = process.env.apiKey || process.env.AUTHENTICATION_API_KEY;
+  const instanceName = process.env.INSTANCE_NAME;
+
+  if (!apiKey || !instanceName) {
+    logger.warn(
+      '⚠️ apiKey ou INSTANCE_NAME ausentes no .env — pulando auto-registro de webhook na Evolution API.',
+    );
+    return;
+  }
+
+  const webhookHost = process.env.WEBHOOK_HOST_IP || '172.17.0.1';
+  const webhookUrl =
+    process.env.WEBHOOK_PUBLIC_URL ||
+    `http://${webhookHost}:${port}/webhook/evolution`;
+
+  try {
+    const response = await fetch(`${baseUrl}/webhook/set/${instanceName}`, {
+      method: 'POST',
+      headers: {
+        apikey: apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        webhook: {
+          enabled: true,
+          url: webhookUrl,
+          byEvents: false,
+          base64: false,
+          events: ['MESSAGES_UPSERT'],
+        },
+      }),
+    });
+
+    if (response.ok) {
+      logger.log(
+        `🔗 Webhook registrado automaticamente na Evolution API (${instanceName}) -> ${webhookUrl}`,
+      );
+    } else {
+      const errText = await response.text();
+      logger.warn(
+        `⚠️ Evolution API retornou status ${response.status} ao registrar webhook: ${errText}`,
+      );
+    }
+  } catch (err: any) {
+    logger.warn(
+      `⚠️ Não foi possível registrar webhook na Evolution API (${err.message}).`,
+    );
+  }
+}
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const args = process.argv.slice(2);
@@ -14,10 +69,11 @@ async function bootstrap() {
   if (args.includes('--listen')) {
     const httpApp = await NestFactory.create(AppModule);
     const port = Number(process.env.PORT || 3000);
-    await httpApp.listen(port);
+    await httpApp.listen(port, '0.0.0.0');
     logger.log(
-      `🎧 Receptor de comandos WhatsApp (/webhook/evolution) ativo na porta ${port}.`,
+      `🎧 Receptor de comandos WhatsApp (/webhook/evolution) ativo em 0.0.0.0:${port}.`,
     );
+    await registerEvolutionWebhook(port, logger);
     return;
   }
 

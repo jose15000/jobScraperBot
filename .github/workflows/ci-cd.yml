@@ -57,11 +57,14 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          OPEN_ROUTER_KEY_SECRET: ${{ secrets.OPEN_ROUTER_API_KEY }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
+          envs: OPEN_ROUTER_KEY_SECRET
           script_stop: true
           script: |
             export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$PATH"
@@ -104,5 +107,18 @@ jobs:
               echo "🔨 Compilando build de produção (dist/main.js)..."
               npm run build
             fi
+
+            if [ -n "$OPEN_ROUTER_KEY_SECRET" ] && [ -f .env ]; then
+              if grep -q "^OPEN_ROUTER_API_KEY=" .env; then
+                sed -i "s|^OPEN_ROUTER_API_KEY=.*|OPEN_ROUTER_API_KEY=$OPEN_ROUTER_KEY_SECRET|" .env
+              else
+                echo "" >> .env
+                echo "OPEN_ROUTER_API_KEY=$OPEN_ROUTER_KEY_SECRET" >> .env
+              fi
+              echo "🔑 OPEN_ROUTER_API_KEY sincronizada no .env da VPS."
+            fi
+
+            echo "🎧 Reiniciando listener de comandos WhatsApp (/cv)..."
+            ./run-bot.sh --restart-listener
 
             echo "✅ Deploy finalizado com sucesso no commit $(git rev-parse --short HEAD)!"

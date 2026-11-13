@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# JobSearchBot - Script de Execução Agendada (Cron)
+# JobSearchBot - Script de Execução Agendada (Cron) e Watchdog do Listener
 # ==============================================================================
 
 set -e
@@ -9,8 +9,8 @@ set -e
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
 
-# Garante que os caminhos comuns de Node/NVM/PNPM estejam no PATH do cron
-export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$PATH"
+# Garante que os caminhos comuns de Node/NVM/PNPM/Typst estejam no PATH do cron
+export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$PATH"
 
 # Se o node ainda não estiver no PATH, tenta carregar o NVM
 if ! command -v node &> /dev/null; then
@@ -18,6 +18,36 @@ if ! command -v node &> /dev/null; then
 fi
 
 LOG_FILE="$PROJECT_DIR/cron.log"
+LISTENER_LOG="$PROJECT_DIR/listener.log"
+
+# Função para garantir que o receptor sob demanda (--listen) esteja rodando
+ensure_listener() {
+    local force_restart="${1:-false}"
+
+    if [ "$force_restart" = "true" ]; then
+        pkill -f "dist/main.*--listen" 2>/dev/null || true
+        sleep 1
+    fi
+
+    if ! pgrep -f "dist/main.*--listen" > /dev/null 2>&1; then
+        # Descobre o IP do gateway Docker para a Evolution API conseguir chamar o host
+        GATEWAY_IP=$(docker inspect evolution_api --format '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}' 2>/dev/null | head -n 1 || true)
+        if [ -z "$GATEWAY_IP" ]; then
+            GATEWAY_IP="172.17.0.1"
+        fi
+        export WEBHOOK_HOST_IP="$GATEWAY_IP"
+
+        echo "🎧 [$(date '+%Y-%m-%d %H:%M:%S')] Iniciando listener WhatsApp (/cv) em background (Gateway: $WEBHOOK_HOST_IP)..." >> "$LISTENER_LOG"
+        nohup node "$PROJECT_DIR/dist/main.js" --listen >> "$LISTENER_LOG" 2>&1 &
+    fi
+}
+
+# Se chamado com --restart-listener (ex: pelo deploy do GitHub Actions), apenas reinicia o listener e sai
+if [ "${1:-}" = "--restart-listener" ]; then
+    ensure_listener "true"
+    echo "✅ Listener WhatsApp reiniciado em background."
+    exit 0
+fi
 
 echo "==========================================================" >> "$LOG_FILE"
 echo "🕒 [$(date '+%Y-%m-%d %H:%M:%S')] Iniciando JobSearchBot..." >> "$LOG_FILE"
@@ -36,7 +66,10 @@ if [ ! -f "$PROJECT_DIR/dist/main.js" ]; then
     fi
 fi
 
-# Executa o bot e direciona a saída para o log
+# Garante que o listener de comandos (/cv) esteja rodando na VPS
+ensure_listener "false"
+
+# Executa o bot (one-shot cron) e direciona a saída para o log
 node "$PROJECT_DIR/dist/main.js" >> "$LOG_FILE" 2>&1
 EXIT_CODE=$?
 
