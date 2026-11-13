@@ -265,6 +265,7 @@ export class NativeSystemOneHttpClient implements SystemOneClient {
     private readonly options: {
       baseUrl: string;
       apiKey?: string;
+      model?: string;
       providerName: string;
     },
   ) {}
@@ -288,6 +289,7 @@ export class NativeSystemOneHttpClient implements SystemOneClient {
       method: 'POST',
       headers,
       body: JSON.stringify({
+        model: this.options.model || 'jev-latest',
         state: request.state,
         questions: request.questions,
       }),

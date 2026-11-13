@@ -170,9 +170,17 @@ export class JevService implements OnModuleInit {
               : 'https://api.typesafe.ai/v1/systemone';
         const baseUrl = customBaseUrl || defaultUrl;
 
+        const defaultModel =
+          resolvedProvider === 'kev'
+            ? 'kev-0.8b'
+            : resolvedProvider === 'laya'
+              ? 'laya-multilingual'
+              : 'jev-latest';
+
         this.client = new NativeSystemOneHttpClient({
           baseUrl,
           apiKey: apiKey || undefined,
+          model: customModel || defaultModel,
           providerName: `SystemOne (${resolvedProvider})`,
         });
         this.activeProviderName = `${resolvedProvider} (${baseUrl})`;
