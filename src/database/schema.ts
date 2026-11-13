@@ -7,6 +7,7 @@ export const sentJobs = pgTable(
     url: text('url').notNull().unique(),
     nome_vaga: text('nome_vaga'),
     company: text('company'),
+    description: text('description'),
     sent_at: timestamp('sent_at', { withTimezone: true }).defaultNow(),
   },
   (table) => [

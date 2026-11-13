@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateInstanceDto } from 'src/interfaces/ICreateInstanceDTO/icreateinstancedto.interface';
-import { SendMessageDTO } from 'src/interfaces/SendMessageDTO';
+import {
+  SendMediaDocumentDTO,
+  SendMessageDTO,
+} from 'src/interfaces/SendMessageDTO';
 
 @Injectable()
 export class WhatsappService {
@@ -116,6 +119,58 @@ export class WhatsappService {
       return JSON.parse(body);
     } catch (error: any) {
       this.logger.error(`❌ Fetch falhou: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async sendMediaDocument(mediaDto: SendMediaDocumentDTO) {
+    const baseUrl =
+      process.env.evolutionApiUrl || process.env.EVOLUTION_API_URL;
+    const url = `${baseUrl}/message/sendMedia/${mediaDto.instanceName}`;
+    this.logger.log(
+      `📤 Enviando documento PDF (${mediaDto.fileName}) para: ${url}`,
+    );
+
+    const cleanBase64 = mediaDto.base64Pdf.replace(
+      /^data:application\/pdf;base64,/,
+      '',
+    );
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          apikey: process.env.apiKey!,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          number: mediaDto.number,
+          mediatype: 'document',
+          mimetype: 'application/pdf',
+          caption: mediaDto.caption || '',
+          media: cleanBase64,
+          fileName: mediaDto.fileName,
+        }),
+      });
+
+      const body = await response.text();
+
+      if (!response.ok) {
+        this.logger.error(
+          `❌ Erro ao enviar documento PDF (${response.status}): ${body}`,
+        );
+        throw new Error(
+          `Falha ao enviar documento PDF na Evolution API (${response.status}): ${body}`,
+        );
+      }
+
+      this.logger.log(`✅ Documento PDF enviado com sucesso no WhatsApp!`);
+      return JSON.parse(body);
+    } catch (error: any) {
+      this.logger.error(
+        `❌ Fetch falhou no envio de PDF: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

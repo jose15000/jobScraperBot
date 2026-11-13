@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 export interface ApprovedJobDto {
+  id?: number;
+  title?: string;
+  company?: string;
   score: number;
   reason: string;
   url: string;
@@ -15,8 +18,12 @@ export class JobDigestFormatter {
     const digestTitle = `🚀 *Varredura Completa: ${sortedJobs.length} Novas Vagas Encontradas!* 🚀\n\n`;
     const digestBody = sortedJobs
       .map((job, index) => {
+        const idBadge = job.id ? ` [#${job.id}]` : '';
+        const titleLabel = job.title
+          ? ` — *${job.title}*${job.company ? ` (${job.company})` : ''}`
+          : '';
         return [
-          `*${index + 1}️`,
+          `*${index + 1}️${idBadge}*${titleLabel}`,
           `📝 *Resumo:* _"${job.previewText}..."_`,
           job.url && job.url.startsWith('http') ? `🔗 *Link:* ${job.url}` : '',
           '──────────────────',
@@ -26,6 +33,9 @@ export class JobDigestFormatter {
       })
       .join('\n\n');
 
-    return digestTitle + digestBody;
+    const exampleId = sortedJobs.find((j) => j.id)?.id || 1;
+    const footer = `\n\n📄 *Para gerar currículo otimizado para uma vaga, responda:* \`/cv <ID>\` _(ex: /cv ${exampleId})_`;
+
+    return digestTitle + digestBody + footer;
   }
 }

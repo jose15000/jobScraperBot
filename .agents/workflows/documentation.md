@@ -26,6 +26,7 @@ src/
   │     └── job-config.service.ts# Declarative YAML/ENV configuration loader (Config Layer)
   ├── services/
   │     ├── bot/                 # Orchestrator interface for browser scraping and messaging requests
+  │     ├── cv/                  # On-demand ATS CV optimization (OpenRouter + Jev + Typst PDF compiler)
   │     ├── jev/                 # TypeSafe Jev AI semantic heuristic evaluation (System One)
   │     ├── scrapservice/        # Low-level HTTP integrations with Apify (LinkedIn)
   │     ├── glassdoor/           # Low-level HTTP integrations with Apify (Glassdoor)
@@ -47,7 +48,8 @@ src/
    - **`JobHistoryRepository`**: Solely handles persistent storage and querying of sent jobs using **Drizzle ORM**.
    - **`JobDeduplicationService`**: Solely handles title and company normalization and duplicate filtering.
    - **`JevService`**: Handles semantic job fit evaluation via TypeSafe Jev.
-   - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages.
+   - **`JobDigestFormatter`**: Solely formats and styles the WhatsApp alert messages (with `[#ID]` badges for on-demand CV generation).
+   - **`CvOptimizationService` / `CvLlmService` / `TypstTemplateService` / `TypstCompilerService`**: Handles on-demand ATS resume tailoring from `cv.base.yaml` using OpenRouter, semantic verification with TypeSafe Jev, ultra-fast PDF compilation via Typst (`typst` CLI), and direct PDF delivery to WhatsApp via Evolution API (`sendMediaDocument`).
    - **`ScrapserviceService`**: Handles low-level LinkedIn scraper HTTP request logic.
    - **`GlassdoorService`**: Handles low-level Glassdoor scraper HTTP request logic.
 2. **Open-Closed Principle (OCP):**
@@ -106,6 +108,11 @@ Common commands and pipeline validation tasks:
   ```bash
   npx ts-node src/main.ts
   ```
+- **On-Demand CV Optimization (CLI or WhatsApp):**
+  ```bash
+  pnpm cv <jobId_or_url_or_description>
+  ```
+  Or via WhatsApp by replying `/cv <ID>` (handled by `POST /webhook/evolution` when running `pnpm listen`).
 - **Docker Production Deploy:**
   ```bash
   sudo docker compose up -d --build api

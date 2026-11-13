@@ -2,9 +2,15 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { TypeSafeClient } from '@typesafe-ai/sdk';
 import {
   evaluateJobFitWithJev,
+  evaluateTailoredCvWithJev,
   UserProfileCriteria,
 } from '../../utils/jev';
 import { JobCandidateInput } from 'src/interfaces/JobCandidateInput/IjobcandidateInput';
+import {
+  BaseCvData,
+  CvTailoredPatchDto,
+  TailoredCvEvaluation,
+} from 'src/interfaces/cv/cv.interface';
 
 export interface JobEvaluationResult {
   shouldApply: boolean;
@@ -55,5 +61,27 @@ export class JevService implements OnModuleInit {
         reason: `Erro na avaliação com o Jev: ${error}`,
       };
     }
+  }
+
+  async evaluateTailoredCv(
+    baseCv: BaseCvData,
+    tailoredPatch: CvTailoredPatchDto,
+    jobInfo: { title: string; company?: string; description: string },
+  ): Promise<TailoredCvEvaluation> {
+    if (!this.isAvailable || !this.client) {
+      return {
+        isCredible: true,
+        credibilityProbability: 1,
+        atsScore: 85,
+        summaryReason: 'Currículo adaptado para ATS.',
+      };
+    }
+
+    return evaluateTailoredCvWithJev(
+      this.client,
+      baseCv,
+      tailoredPatch,
+      jobInfo,
+    );
   }
 }

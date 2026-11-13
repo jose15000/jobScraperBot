@@ -14,6 +14,7 @@ export interface StoredJobRecord {
   url: string;
   title: string;
   company?: string;
+  description?: string;
   sent_at?: Date;
 }
 
@@ -42,6 +43,7 @@ export class JobHistoryRepository implements OnModuleInit, OnModuleDestroy {
         );
         ALTER TABLE sent_jobs ADD COLUMN IF NOT EXISTS nome_vaga TEXT;
         ALTER TABLE sent_jobs ADD COLUMN IF NOT EXISTS company TEXT;
+        ALTER TABLE sent_jobs ADD COLUMN IF NOT EXISTS description TEXT;
         ALTER TABLE sent_jobs DROP CONSTRAINT IF EXISTS sent_jobs_nome_vaga_key;
         CREATE INDEX IF NOT EXISTS idx_sent_jobs_url ON sent_jobs (url);
         CREATE INDEX IF NOT EXISTS idx_sent_jobs_nome_vaga ON sent_jobs (nome_vaga);
@@ -182,19 +184,53 @@ export class JobHistoryRepository implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async getJobById(id: number): Promise<StoredJobRecord | null> {
+    if (!id || Number.isNaN(id)) return null;
+    try {
+      const rows = await this.db
+        .select({
+          id: sentJobs.id,
+          url: sentJobs.url,
+          title: sentJobs.nome_vaga,
+          company: sentJobs.company,
+          description: sentJobs.description,
+          sent_at: sentJobs.sent_at,
+        })
+        .from(sentJobs)
+        .where(eq(sentJobs.id, id))
+        .limit(1);
+
+      const row = rows[0];
+      if (!row) return null;
+
+      return {
+        id: row.id,
+        url: row.url,
+        title: row.title || '',
+        company: row.company || '',
+        description: row.description || '',
+        sent_at: row.sent_at || undefined,
+      };
+    } catch (error) {
+      this.logger.error(`Erro ao buscar vaga por ID (${id}):`, error);
+      return null;
+    }
+  }
+
   async save(
-    jobs: { url: string; title: string; company?: string }[],
-  ): Promise<void> {
-    if (jobs.length === 0) return;
+    jobs: { url: string; title: string; company?: string; description?: string }[],
+  ): Promise<StoredJobRecord[]> {
+    if (jobs.length === 0) return [];
 
     try {
       const values = jobs.map((job) => ({
         url: job.url,
         nome_vaga: job.title,
         company: job.company || '',
+        description: job.description || '',
       }));
 
-      await this.db
+      const inserted = await this.db
         .insert(sentJobs)
         .values(values)
         .onConflictDoUpdate({
@@ -202,12 +238,30 @@ export class JobHistoryRepository implements OnModuleInit, OnModuleDestroy {
           set: {
             nome_vaga: sql`EXCLUDED.nome_vaga`,
             company: sql`CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE sent_jobs.company END`,
+            description: sql`CASE WHEN EXCLUDED.description <> '' THEN EXCLUDED.description ELSE sent_jobs.description END`,
           },
+        })
+        .returning({
+          id: sentJobs.id,
+          url: sentJobs.url,
+          title: sentJobs.nome_vaga,
+          company: sentJobs.company,
+          description: sentJobs.description,
+          sent_at: sentJobs.sent_at,
         });
 
       this.logger.log(`💾 ${jobs.length} vagas persistidas no banco com Drizzle.`);
+      return inserted.map((row) => ({
+        id: row.id,
+        url: row.url,
+        title: row.title || '',
+        company: row.company || '',
+        description: row.description || '',
+        sent_at: row.sent_at || undefined,
+      }));
     } catch (error) {
       this.logger.error('Erro ao persistir vagas no banco com Drizzle:', error);
+      return [];
     }
   }
 }

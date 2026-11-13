@@ -1,0 +1,60 @@
+# ==============================================================================
+# JobSearchBot - Exemplo de Currículo Base Declarativo (cv.base.example.yaml)
+# ==============================================================================
+# Copie este arquivo para `cv.base.yaml` e preencha com os seus dados reais.
+# ==============================================================================
+
+name: "Seu Nome Completo"
+
+contact:
+  email: "seu.email@exemplo.com"
+  phone: "+55 11 99999-9999"
+  location: "Cidade, UF, Brasil"
+  linkedin: "https://linkedin.com/in/seu-perfil"
+  github: "https://github.com/seu-usuario"
+
+summary: >
+  Desenvolvedor Full Stack com experiência no desenvolvimento de aplicações web
+  utilizando React, Next.js, TypeScript, Node.js e NestJS.
+
+experience:
+  - title: "Desenvolvedor Full Stack Júnior"
+    company: "Empresa Exemplo"
+    location: "Remoto"
+    dates: "Jan 2024 – Presente"
+    description:
+      - "Desenvolvimento e manutenção de APIs REST com Node.js, NestJS e PostgreSQL."
+      - "Implementação de interfaces responsivas com React, Next.js e TypeScript."
+
+projects:
+  - name: "Projeto Destaque"
+    link: "https://github.com/seu-usuario/projeto"
+    dates: "2025"
+    description:
+      - "Aplicação Full Stack construída com Next.js, NestJS, Docker e PostgreSQL."
+
+education:
+  - institution: "Universidade Exemplo"
+    degree: "Bacharelado em Ciência da Computação"
+    dates: "2021 – 2025"
+
+languages:
+  - language: "Português"
+    level: "Nativo"
+  - language: "Inglês"
+    level: "B2"
+
+technologies:
+  languages: "TypeScript, JavaScript, Python"
+  frontend: "React.js, Next.js, Tailwind CSS"
+  backend: "Node.js, NestJS, APIs REST"
+  databases: "PostgreSQL, MongoDB, Redis"
+  devops: "Docker, Git, GitHub Actions (CI/CD)"
+
+sectionTitles:
+  summary: "Resumo Profissional"
+  experience: "Experiência Profissional"
+  projects: "Projetos Relevantes"
+  technologies: "Tecnologias & Habilidades"
+  education: "Formação Acadêmica"
+  languages: "Idiomas"

@@ -32,6 +32,14 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      - name: Setup Typst CLI
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          ARCH=$(uname -m)
+          curl -fsSL "https://github.com/typst/typst/releases/latest/download/typst-${ARCH}-unknown-linux-musl.tar.xz" | tar -xJ --strip-components=1 -C "$HOME/.local/bin" "typst-${ARCH}-unknown-linux-musl/typst"
+          chmod +x "$HOME/.local/bin/typst"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -77,6 +85,14 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             chmod +x run-bot.sh
+
+            if ! command -v typst &> /dev/null && [ ! -x "$HOME/.local/bin/typst" ]; then
+              echo "📄 Instalando binário do Typst em ~/.local/bin/typst..."
+              mkdir -p "$HOME/.local/bin"
+              ARCH=$(uname -m)
+              curl -fsSL "https://github.com/typst/typst/releases/latest/download/typst-${ARCH}-unknown-linux-musl.tar.xz" | tar -xJ --strip-components=1 -C "$HOME/.local/bin" "typst-${ARCH}-unknown-linux-musl/typst"
+              chmod +x "$HOME/.local/bin/typst"
+            fi
 
             echo "📦 Instalando dependências..."
             if command -v pnpm &> /dev/null; then

@@ -80,3 +80,8 @@ profile:
     - "Remoto"
     - "Curitiba"
     - "São Paulo"
+
+# Configurações de Otimização de Currículo (Sob Demanda)
+cvOptimization:
+  openRouterModel: "openrouter/free"
+  baseCvPath: "./cv.base.yaml"

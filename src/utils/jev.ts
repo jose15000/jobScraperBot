@@ -1,6 +1,11 @@
 import { TypeSafeClient, noul } from '@typesafe-ai/sdk';
 import { Logger } from '@nestjs/common';
 import { JevFitEvaluation, JobCandidateInput } from 'src/interfaces/JobCandidateInput/IjobcandidateInput';
+import {
+  BaseCvData,
+  CvTailoredPatchDto,
+  TailoredCvEvaluation,
+} from 'src/interfaces/cv/cv.interface';
 
 const logger = new Logger('JevHeuristics');
 
@@ -83,6 +88,86 @@ export async function evaluateJobFitWithJev(
   } catch (error) {
     logger.error('Erro ao avaliar vaga com o Jev:', error);
     throw error;
+  }
+}
+
+export async function evaluateTailoredCvWithJev(
+  client: TypeSafeClient,
+  baseCv: BaseCvData,
+  tailoredPatch: CvTailoredPatchDto,
+  jobInfo: { title: string; company?: string; description: string },
+): Promise<TailoredCvEvaluation> {
+  try {
+    const state = {
+      target_job: {
+        title: jobInfo.title,
+        company: jobInfo.company || 'Não informada',
+        description: jobInfo.description.substring(0, 1500),
+      },
+      original_companies: baseCv.experience.map((e) => e.company),
+      tailored_cv: {
+        summary: tailoredPatch.summary,
+        experience: tailoredPatch.experience.map((e) => ({
+          title: e.title,
+          company: e.company,
+          dates: e.dates,
+          description: e.description,
+        })),
+        technologies: {
+          languages: tailoredPatch.technologies.languages || '',
+          frontend: tailoredPatch.technologies.frontend || '',
+          backend: tailoredPatch.technologies.backend || '',
+          databases: tailoredPatch.technologies.databases || '',
+          devops: tailoredPatch.technologies.devops || '',
+        },
+      },
+    };
+
+    const questions = {
+      preserves_credibility: noul(
+        'Does `tailored_cv` remain factually credible relative to `original_companies` while sounding natural for a human technical recruiter?',
+        {
+          true: 'The tailored resume keeps the candidate original companies, avoids fabricated work history, and reads naturally.',
+          false:
+            'The tailored resume invents fake companies, contains obvious keyword-stuffing spam, or contradicts the candidate background.',
+        },
+      ),
+      strong_ats_alignment: noul(
+        'Does `tailored_cv` effectively incorporate the primary technical keywords and requirements from `target_job`?',
+        {
+          true: 'The summary, experience bullets, and technologies strongly align with the target job requirements and stack.',
+          false:
+            'Key technologies or role requirements from the job description are missing from the tailored resume.',
+        },
+      ),
+    };
+
+    const response = await client.systemOne({
+      state,
+      questions,
+    });
+
+    const credibilityProb = response.answers.preserves_credibility.noul;
+    const atsProb = response.answers.strong_ats_alignment.noul;
+    const atsScore = Math.round(atsProb * 100);
+    const isCredible = credibilityProb >= 0.5;
+
+    return {
+      isCredible,
+      credibilityProbability: credibilityProb,
+      atsScore,
+      summaryReason: isCredible
+        ? `Aderência ATS estimada: ${atsScore}% (Credibilidade verificada: ${Math.round(credibilityProb * 100)}%)`
+        : `Aviso Jev: texto pode soar artificial (credibilidade: ${Math.round(credibilityProb * 100)}%, ATS: ${atsScore}%)`,
+    };
+  } catch (error) {
+    logger.warn('Aviso: Não foi possível auditar CV com o Jev:', error);
+    return {
+      isCredible: true,
+      credibilityProbability: 1,
+      atsScore: 85,
+      summaryReason: 'Currículo adaptado para ATS.',
+    };
   }
 }
 

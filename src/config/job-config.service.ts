@@ -5,6 +5,7 @@ import * as YAML from 'yaml';
 import { AppJobConfig } from '../interfaces/job-config/job-config.interface';
 import { UserProfileCriteria } from '../utils/jev';
 import { ILocationOption } from '../interfaces/isearch/isearch.interface';
+import { BaseCvData, CvOptimizationConfig } from '../interfaces/cv/cv.interface';
 
 @Injectable()
 export class JobConfigService implements OnModuleInit {
@@ -216,6 +217,50 @@ export class JobConfigService implements OnModuleInit {
     return this.config;
   }
 
+  getCvOptimizationConfig(): CvOptimizationConfig {
+    return {
+      openRouterModel:
+        process.env.OPENROUTER_MODEL ||
+        this.config.cvOptimization?.openRouterModel ||
+        'openrouter/free',
+      baseCvPath:
+        process.env.CV_BASE_PATH ||
+        this.config.cvOptimization?.baseCvPath ||
+        path.resolve(process.cwd(), 'cv.base.yaml'),
+    };
+  }
+
+  getBaseCv(): BaseCvData {
+    const envCvYaml = process.env.CV_BASE_YAML;
+    if (envCvYaml && envCvYaml.trim().length > 0) {
+      return YAML.parse(envCvYaml) as BaseCvData;
+    }
+
+    const { baseCvPath } = this.getCvOptimizationConfig();
+    const candidatePaths = [
+      path.isAbsolute(baseCvPath)
+        ? baseCvPath
+        : path.resolve(process.cwd(), baseCvPath),
+      path.resolve(process.cwd(), 'cv.base.yaml'),
+      path.resolve(process.cwd(), 'cv.base.example.yaml'),
+      '/usr/src/app/cv.base.yaml',
+    ];
+
+    for (const cvPath of candidatePaths) {
+      if (fs.existsSync(cvPath)) {
+        const raw = fs.readFileSync(cvPath, 'utf8');
+        const parsed = YAML.parse(raw) as BaseCvData;
+        if (parsed && typeof parsed === 'object' && parsed.name) {
+          return parsed;
+        }
+      }
+    }
+
+    throw new Error(
+      "Currículo base não encontrado: crie o arquivo 'cv.base.yaml' na raiz do projeto ou defina CV_BASE_YAML no ambiente.",
+    );
+  }
+
   private validateConfig(config: AppJobConfig, sourceDescription: string) {
     if (!config.search?.queries || config.search.queries.length === 0) {
       throw new Error(
@@ -261,12 +306,21 @@ export class JobConfigService implements OnModuleInit {
           }
         : {};
 
+    const cvOptimization: Partial<CvOptimizationConfig> =
+      raw?.cvOptimization && typeof raw.cvOptimization === 'object'
+        ? {
+            openRouterModel: raw.cvOptimization.openRouterModel,
+            baseCvPath: raw.cvOptimization.baseCvPath,
+          }
+        : {};
+
     return {
       search: {
         queries,
         locations,
       },
       profile,
+      cvOptimization,
     };
   }
 }

@@ -56,7 +56,12 @@ export class TaskService {
     const seenJobKeys = this.jobDeduplicationService.createKeySet(recentStoredJobs);
 
     const approvedJobs: ApprovedJobDto[] = [];
-    const newlySentJobs: { url: string; title: string; company?: string }[] = [];
+    const newlySentJobs: {
+      url: string;
+      title: string;
+      company?: string;
+      description?: string;
+    }[] = [];
 
     // 3. Processamento, Deduplicação (Título + Empresa) e Heurística com Jev
     for (const post of rawPosts) {
@@ -141,13 +146,15 @@ export class TaskService {
           `✅ Vaga aprovada (score: ${result.score}): ${title} ${company ? `(${company})` : ''}`,
         );
         approvedJobs.push({
+          title,
+          company,
           score: result.score,
           reason: result.reason,
           url,
           previewText: text.substring(0, 150).replace(/\n/g, ' ').trim(),
         });
 
-        const newJobRecord = { url, title, company };
+        const newJobRecord = { url, title, company, description: text };
         newlySentJobs.push(newJobRecord);
         recentStoredJobs.unshift(newJobRecord);
       } else {
@@ -159,6 +166,22 @@ export class TaskService {
     }
 
     if (approvedJobs.length > 0) {
+      const savedRecords =
+        (await this.historyRepository.save(newlySentJobs)) || [];
+      const urlToIdMap = new Map<string, number>();
+      for (const rec of savedRecords) {
+        if (rec.url && rec.id) {
+          urlToIdMap.set(rec.url, rec.id);
+        }
+      }
+
+      for (const approved of approvedJobs) {
+        const dbId = urlToIdMap.get(approved.url);
+        if (dbId) {
+          approved.id = dbId;
+        }
+      }
+
       const fullDigest = this.digestFormatter.format(approvedJobs);
 
       this.logger.log(
@@ -171,8 +194,6 @@ export class TaskService {
         text: fullDigest,
         delay: 1500,
       });
-
-      await this.historyRepository.save(newlySentJobs);
     } else {
       this.logger.log(
         'Nenhuma nova vaga aprovada passou pelos filtros nesta execução.',

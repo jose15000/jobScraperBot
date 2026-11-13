@@ -1,5 +1,6 @@
 import { ILocationOption } from '../isearch/isearch.interface';
 import { UserProfileCriteria } from '../../utils/jev';
+import { CvOptimizationConfig } from '../cv/cv.interface';
 
 export interface AppJobConfig {
   search: {
@@ -7,4 +8,5 @@ export interface AppJobConfig {
     locations: ILocationOption[];
   };
   profile?: Partial<UserProfileCriteria>;
+  cvOptimization?: Partial<CvOptimizationConfig>;
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppService } from './app.service';
+import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import { PlaywrightService } from './services/playWrightService/scrapservice.service';
 import { WhatsappService } from './services/whatsapp-service/whatsapp-service.service';
@@ -11,9 +12,14 @@ import { LinkedinApifyService } from './services/Linkedin/linkedin-apify.service
 import { JevService } from './services/jev/jev.service';
 import { JobDeduplicationService } from './utils/deduplication';
 import { JobConfigService } from './config/job-config.service';
+import { TypstTemplateService } from './services/cv/typst-template.service';
+import { TypstCompilerService } from './services/cv/typst-compiler.service';
+import { CvLlmService } from './services/cv/cv-llm.service';
+import { CvOptimizationService } from './services/cv/cv-optimization.service';
 
 @Module({
   imports: [ConfigModule.forRoot()],
+  controllers: [AppController],
   providers: [
     AppService,
     PlaywrightService,
@@ -26,6 +32,10 @@ import { JobConfigService } from './config/job-config.service';
     LinkedinApifyService,
     JobDeduplicationService,
     JobConfigService,
+    TypstTemplateService,
+    TypstCompilerService,
+    CvLlmService,
+    CvOptimizationService,
   ],
 })
-export class AppModule { }
+export class AppModule {}

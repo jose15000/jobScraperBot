@@ -1,0 +1,99 @@
+# ==============================================================================
+# JobSearchBot - Currículo Base Declarativo (Fonte da Verdade)
+# ==============================================================================
+# Dados fixos (name, contact, education, languages) são blindados em código e
+# nunca sofrem alucinação da IA. Apenas summary, experience, projects e
+# technologies são adaptados sob demanda para a vaga escolhida.
+# ==============================================================================
+
+name: "José Henrique"
+
+contact:
+  email: "josehenrique.dev.contato@gmail.com"
+  phone: "+55 79 98804-3018"
+  location: "Aracaju, SE, Brasil"
+  linkedin: "https://linkedin.com/in/josé-henrique-oliveira-de-carvalho1500/"
+  github: "https://github.com/jose15000"
+
+summary: >
+  Desenvolvedor Full Stack com experiência prática na construção de aplicações web
+  escaláveis utilizando React.js, Next.js, TypeScript, Node.js e NestJS. Vivência em
+  integração de APIs REST, meios de pagamento (Stripe), serviços de IA, bancos de
+  dados relacionais e NoSQL (PostgreSQL, MongoDB), filas assíncronas (BullMQ/Redis)
+  e automação de deploy com Docker e CI/CD.
+
+experience:
+  - title: "Engenheiro de Software Júnior"
+    company: "GoWork Digital"
+    location: "Aracaju, SE, Brasil"
+    dates: "Junho 2024 – Presente"
+    description:
+      - "Desenvolvi um lead quiz para o PandaFit (Jejum Intermitente), com integração da API da Stripe para processamento de pagamentos e conversão de leads."
+      - "Implementei a versão web do Ony, uma plataforma de mensagens anônimas integrada ao Facebook, com mais de 1.000 downloads na Play Store."
+      - "Refatorei e migrei a base de código do Promover para Next.js, melhorando a arquitetura do projeto, performance e compatibilidade mobile no TikTok."
+      - "Colaborei com equipes de design e produto em metodologia ágil para garantir responsividade, performance e qualidade de código em múltiplos projetos."
+
+  - title: "Desenvolvedor Full Stack Júnior"
+    company: "The Public House"
+    location: "Remoto"
+    dates: "Janeiro 2024 – Abril 2024"
+    description:
+      - "Construí do zero uma aplicação web para visualização e geração 3D automatizada de projetos arquitetônicos, utilizando inteligência artificial em tempo real."
+      - "Implementei o front-end em React com Sass, focando em responsividade e desempenho visual para apresentações comerciais."
+      - "Estruturei e desenvolvi a API back-end em NestJS, integrando serviços de IA e gerenciando o fluxo de dados em tempo real entre clientes e o motor de geração 3D."
+      - "Colaborei diretamente com a equipe de criação e cenografia para traduzir requisitos complexos do setor de publicidade arquitetônica em funcionalidades técnicas."
+
+projects:
+  - name: "MicroSpark"
+    link: "https://github.com/jose15000"
+    dates: "2025 (Em desenvolvimento)"
+    description:
+      - "Desenvolvi um template SaaS moderno arquitetado com Next.js 15, TypeScript, Tailwind CSS e shadcn/ui para acelerar a criação de MVPs."
+      - "Implementa sistema de autenticação, painel administrativo e landing pages selecionáveis via CLI seguindo princípios SOLID e Clean Code."
+
+  - name: "LioApply"
+    link: "https://github.com/jose15000/JobEZ-server"
+    dates: "2025"
+    description:
+      - "Plataforma que utiliza IA para adaptar e compilar currículos personalizados baseados na descrição da vaga, otimizados para sistemas ATS."
+      - "Desenvolvi o back-end com NestJS, Prisma/PostgreSQL e sistema de filas assíncronas com BullMQ e Redis, além de integração com WhatsApp via Evolution API."
+
+  - name: "EzTrack"
+    link: "https://github.com/jose15000"
+    dates: "2024"
+    description:
+      - "Plataforma web de rastreamento de encomendas para lojistas com integração centralizada de APIs de frete nacionais."
+      - "Desenvolvi painel do usuário com cadastro de pedidos, histórico de rastreios e notificações automatizadas por e-mail usando Next.js, TypeScript, Tailwind CSS e Bun."
+
+  - name: "Website Pessoal"
+    link: "https://github.com/jose15000/portfoliowebsite"
+    dates: "2024"
+    description:
+      - "Portfólio e blog técnico construído com React.js, Next.js, TypeScript, Tailwind CSS e Elysia.js, hospedado na Vercel com foco em responsividade e SEO."
+
+education:
+  - institution: "Universidade Tiradentes (Unit)"
+    degree: "Bacharelado em Ciência da Computação"
+    dates: "Abril 2021 – Junho 2026"
+
+languages:
+  - language: "Português"
+    level: "Nativo"
+  - language: "Inglês"
+    level: "B2 (Intermediário Avançado)"
+    certification: "B2 First (FCE) - Cambridge"
+
+technologies:
+  languages: "TypeScript, JavaScript, Python, Java, C#"
+  frontend: "React.js, Next.js, Tailwind CSS, HTML5, CSS3, Sass, shadcn/ui"
+  backend: "Node.js, NestJS, Elysia.js, Bun, APIs REST, GraphQL"
+  databases: "PostgreSQL, MongoDB, Redis, Drizzle ORM, Prisma"
+  devops: "Docker, Git, GitHub Actions (CI/CD), Linux, AWS S3, Playwright, Jest"
+
+sectionTitles:
+  summary: "Resumo Profissional"
+  experience: "Experiência Profissional"
+  projects: "Projetos Relevantes"
+  technologies: "Tecnologias & Habilidades"
+  education: "Formação Acadêmica"
+  languages: "Idiomas"
