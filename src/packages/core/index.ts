@@ -1,4 +1,11 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import {
+  DynamicModule,
+  Inject,
+  Injectable,
+  Logger,
+  Module,
+  Optional,
+} from '@nestjs/common';
 import { JobConfigService } from '../../config/job-config.service';
 import {
   ClassifierProviderConfig,
@@ -65,10 +72,14 @@ export interface LioApplyOptions {
   scraperConcurrency?: number;
 }
 
+export interface ApprovedCandidateJobDto extends ApprovedJobDto {
+  description?: string;
+}
+
 export interface SearchAndClassifyOutput {
   rawCount: number;
   uniqueCandidates: NormalizedCandidateJob[];
-  approvedJobs: ApprovedJobDto[];
+  approvedJobs: ApprovedCandidateJobDto[];
   digestText: string;
 }
 
@@ -228,7 +239,7 @@ export function createLioApply(options?: LioApplyOptions) {
     async classifyJobs(
       candidates: NormalizedCandidateJob[],
       profileOverride?: Partial<UserProfileCriteria>,
-    ): Promise<ApprovedJobDto[]> {
+    ): Promise<ApprovedCandidateJobDto[]> {
       if (candidates.length === 0) return [];
       const profile = {
         ...this.getUserProfile(),
@@ -239,7 +250,7 @@ export function createLioApply(options?: LioApplyOptions) {
         candidates,
         profile,
       );
-      const approved: ApprovedJobDto[] = [];
+      const approved: ApprovedCandidateJobDto[] = [];
 
       for (let i = 0; i < candidates.length; i++) {
         const candidate = candidates[i];
@@ -252,6 +263,7 @@ export function createLioApply(options?: LioApplyOptions) {
           score: ev.score,
           reason: ev.reason,
           url: candidate.url,
+          description: candidate.text,
           previewText: candidate.text
             .substring(0, 150)
             .replace(/\n/g, ' ')
@@ -286,6 +298,123 @@ export function createLioApply(options?: LioApplyOptions) {
   };
 }
 
+@Injectable()
+export class LioApplyCoreService {
+  private readonly logger = new Logger(LioApplyCoreService.name);
+
+  constructor(
+    private readonly configService: JobConfigService,
+    private readonly deduplicationService: JobDeduplicationService,
+    private readonly jevService: JevService,
+    private readonly digestFormatter: JobDigestFormatter,
+    private readonly playwrightService: PlaywrightService,
+    @Optional()
+    @Inject(LIOAPPLY_PROVIDERS)
+    private readonly injectedProviders?: IProviderConfig[],
+  ) {}
+
+  async searchAndClassify(params?: {
+    existingJobs?: Array<{ title: string; company?: string }>;
+  }): Promise<SearchAndClassifyOutput> {
+    const queries = this.configService.getQueries();
+    const locations = this.configService.getLocations();
+    const userProfile = this.configService.getUserProfile();
+    const providers =
+      this.injectedProviders ||
+      this.configService.getProviders?.() ||
+      resolveProviders();
+
+    this.logger.log(
+      `🚀 [LioApplyCore] Buscando vagas em ${providers.length} providers para ${queries.length} queries...`,
+    );
+
+    const rawPosts = await this.playwrightService.scrapeProviders(
+      providers,
+      queries,
+      locations,
+    );
+
+    const seenKeys = this.deduplicationService.createKeySet(
+      params?.existingJobs || [],
+    );
+    const uniqueCandidates: NormalizedCandidateJob[] = [];
+
+    for (const post of rawPosts) {
+      const normalized = normalizeScrapedPost(post);
+      if (!normalized) continue;
+      if (
+        this.deduplicationService.isDuplicate(
+          { title: normalized.title, company: normalized.company },
+          seenKeys,
+        )
+      ) {
+        continue;
+      }
+      seenKeys.add(
+        this.deduplicationService.createKey(
+          normalized.title,
+          normalized.company,
+        ),
+      );
+      uniqueCandidates.push(normalized);
+    }
+
+    if (uniqueCandidates.length === 0) {
+      return {
+        rawCount: rawPosts.length,
+        uniqueCandidates: [],
+        approvedJobs: [],
+        digestText: '',
+      };
+    }
+
+    this.logger.log(
+      `🧠 [LioApplyCore] Classificando ${uniqueCandidates.length} vagas inéditas em lote...`,
+    );
+    const evaluations =
+      typeof this.jevService.evaluateJobsBatch === 'function'
+        ? await this.jevService.evaluateJobsBatch(uniqueCandidates, userProfile)
+        : await Promise.all(
+            uniqueCandidates.map((c) =>
+              this.jevService.evaluateJob(c, userProfile),
+            ),
+          );
+
+    const approvedJobs: ApprovedCandidateJobDto[] = [];
+    for (let i = 0; i < uniqueCandidates.length; i++) {
+      const candidate = uniqueCandidates[i];
+      const ev = evaluations[i];
+      if (!ev?.shouldApply) continue;
+
+      this.logger.log(
+        `✅ Vaga aprovada (score: ${ev.score}): ${candidate.title}${candidate.company ? ` (${candidate.company})` : ''}`,
+      );
+      approvedJobs.push({
+        title: candidate.title,
+        company: candidate.company,
+        score: ev.score,
+        reason: ev.reason,
+        url: candidate.url,
+        description: candidate.text,
+        previewText: candidate.text
+          .substring(0, 150)
+          .replace(/\n/g, ' ')
+          .trim(),
+      });
+    }
+
+    const digestText =
+      approvedJobs.length > 0 ? this.digestFormatter.format(approvedJobs) : '';
+
+    return {
+      rawCount: rawPosts.length,
+      uniqueCandidates,
+      approvedJobs,
+      digestText,
+    };
+  }
+}
+
 @Module({})
 export class LioApplyCoreModule {
   static register(options?: LioApplyOptions): DynamicModule {
@@ -298,6 +427,7 @@ export class LioApplyCoreModule {
         JevService,
         JobDigestFormatter,
         PlaywrightService,
+        LioApplyCoreService,
         {
           provide: LIOAPPLY_PROVIDERS,
           useValue: resolved,
@@ -309,6 +439,7 @@ export class LioApplyCoreModule {
         JevService,
         JobDigestFormatter,
         PlaywrightService,
+        LioApplyCoreService,
         LIOAPPLY_PROVIDERS,
       ],
     };

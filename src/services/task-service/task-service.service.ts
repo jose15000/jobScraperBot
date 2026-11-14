@@ -1,18 +1,8 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { BotService } from '../bot/bot.service';
 import { JobHistoryRepository } from '../../repositories/job-history.repository';
 import { JobDigestFormatter, ApprovedJobDto } from './job-digest.formatter';
-import { DEFAULT_WEB_PROVIDERS } from '../../config/providers';
-import { LinkedinApifyService } from '../Linkedin/linkedin-apify.service';
-import { JevService } from '../jev/jev.service';
-import {
-  JobDeduplicationService,
-  NormalizedCandidateJob,
-  normalizeScrapedPost,
-} from '../../utils/deduplication';
-import { JobConfigService } from '../../config/job-config.service';
-import { IProviderConfig } from '../../interfaces/isearch/isearch.interface';
-import { LIOAPPLY_PROVIDERS } from '../../packages/core';
+import { LioApplyCoreService } from '@lioapply/core';
 
 @Injectable()
 export class TaskService {
@@ -20,129 +10,27 @@ export class TaskService {
 
   constructor(
     private readonly botService: BotService,
-    private readonly jevService: JevService,
     private readonly historyRepository: JobHistoryRepository,
-    @Optional() private readonly scrapeLinkedinPosts: LinkedinApifyService,
     private readonly digestFormatter: JobDigestFormatter,
-    private readonly jobDeduplicationService: JobDeduplicationService,
-    private readonly jobConfigService: JobConfigService,
-    @Optional()
-    @Inject(LIOAPPLY_PROVIDERS)
-    private readonly injectedProviders?: IProviderConfig[],
+    @Optional() private readonly lioCore?: LioApplyCoreService,
   ) {}
 
   async runScrapeJob(): Promise<ApprovedJobDto[]> {
-    const queries = this.jobConfigService.getQueries();
-    const locations = this.jobConfigService.getLocations();
-    const userProfile = this.jobConfigService.getUserProfile();
-    const activeProviders =
-      this.injectedProviders ||
-      this.jobConfigService.getProviders?.() ||
-      DEFAULT_WEB_PROVIDERS;
-
-    this.logger.log('🚀 Iniciando pipeline consolidado de busca de vagas...');
-    this.logger.log(
-      `🔍 Queries configuradas (${queries.length}): ${queries.join(', ')}`,
-    );
-
-    // 1. Coleta unificada em sessão única do navegador com concorrência controlada
-    const rawPosts =
-      typeof this.botService.scrapeProviders === 'function'
-        ? await this.botService.scrapeProviders(
-            activeProviders,
-            queries,
-            locations,
-          )
-        : [];
-
-    this.logger.log(
-      `Total de posts brutos coletados: ${rawPosts.length}. Carregando histórico do banco e iniciando filtragem...`,
-    );
-
-    // 2. Deduplicação por Título + Empresa contra histórico recente do PostgreSQL
+    // 1. Busca histórico recente do PostgreSQL para deduplicação
     const recentStoredJobs = await this.historyRepository.getRecentJobs(
       300,
       30,
     );
-    const seenJobKeys =
-      this.jobDeduplicationService.createKeySet(recentStoredJobs);
 
-    const uniqueCandidates: NormalizedCandidateJob[] = [];
-    for (const post of rawPosts) {
-      const normalized = normalizeScrapedPost(post);
-      if (!normalized) continue;
-
-      if (
-        this.jobDeduplicationService.isDuplicate(
-          { title: normalized.title, company: normalized.company },
-          seenJobKeys,
-        )
-      ) {
-        continue;
-      }
-
-      seenJobKeys.add(
-        this.jobDeduplicationService.createKey(
-          normalized.title,
-          normalized.company,
-        ),
-      );
-      uniqueCandidates.push(normalized);
-    }
-
-    if (uniqueCandidates.length === 0) {
-      this.logger.log('Nenhuma vaga inédita encontrada nesta execução.');
+    if (!this.lioCore) {
+      this.logger.warn('LioApplyCoreService não injetado.');
       return [];
     }
 
-    // 3. Classificação Semântica em Lote (System-One Multi-Provider)
-    this.logger.log(
-      `🧠 Classificando ${uniqueCandidates.length} vagas inéditas com o Classificador System-One...`,
-    );
-    const evaluations =
-      typeof this.jevService.evaluateJobsBatch === 'function'
-        ? await this.jevService.evaluateJobsBatch(uniqueCandidates, userProfile)
-        : await Promise.all(
-            uniqueCandidates.map((c) =>
-              this.jevService.evaluateJob(c, userProfile),
-            ),
-          );
-
-    const approvedJobs: ApprovedJobDto[] = [];
-    const newlySentJobs: Array<{
-      url: string;
-      title: string;
-      company?: string;
-      description?: string;
-    }> = [];
-
-    for (let i = 0; i < uniqueCandidates.length; i++) {
-      const candidate = uniqueCandidates[i];
-      const result = evaluations[i];
-      if (!result?.shouldApply) continue;
-
-      this.logger.log(
-        `✅ Vaga aprovada (score: ${result.score}): ${candidate.title}${candidate.company ? ` (${candidate.company})` : ''}`,
-      );
-      approvedJobs.push({
-        title: candidate.title,
-        company: candidate.company,
-        score: result.score,
-        reason: result.reason,
-        url: candidate.url,
-        previewText: candidate.text
-          .substring(0, 150)
-          .replace(/\n/g, ' ')
-          .trim(),
-      });
-
-      newlySentJobs.push({
-        url: candidate.url,
-        title: candidate.title,
-        company: candidate.company,
-        description: candidate.text,
-      });
-    }
+    // 2. O @lioapply/core executa o pipeline: Scrape -> Deduplica -> Classifica em Lote
+    const { approvedJobs } = await this.lioCore.searchAndClassify({
+      existingJobs: recentStoredJobs,
+    });
 
     if (approvedJobs.length === 0) {
       this.logger.log(
@@ -151,9 +39,17 @@ export class TaskService {
       return [];
     }
 
-    // 4. Persistência e Disparo de Digest no WhatsApp
+    // 3. Salva no banco para vincular os IDs ([#ID]) do comando /cv
     const savedRecords =
-      (await this.historyRepository.save(newlySentJobs)) || [];
+      (await this.historyRepository.save(
+        approvedJobs.map((job) => ({
+          url: job.url,
+          title: job.title || 'Desenvolvedor',
+          company: job.company,
+          description: job.description || job.previewText,
+        })),
+      )) || [];
+
     const urlToIdMap = new Map<string, number>();
     for (const rec of savedRecords) {
       if (rec.url && rec.id) {
@@ -166,11 +62,11 @@ export class TaskService {
       if (dbId) approved.id = dbId;
     }
 
-    const fullDigest = this.digestFormatter.format(approvedJobs);
+    // 4. Formata o Digest e envia no WhatsApp
     await this.botService.sendMessage({
       instanceName: process.env.INSTANCE_NAME!,
       number: process.env.WHATSAPP_NUMBER!,
-      text: fullDigest,
+      text: this.digestFormatter.format(approvedJobs),
       delay: 1500,
     });
 
