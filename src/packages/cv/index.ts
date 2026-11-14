@@ -145,18 +145,14 @@ export class LioApplyCvModule {
     return {
       module: LioApplyCvModule,
       providers: [
-        JobConfigService,
-        JevService,
         CvLlmService,
         TypstTemplateService,
         TypstCompilerService,
-        CvOptimizationService,
       ],
       exports: [
         CvLlmService,
         TypstTemplateService,
         TypstCompilerService,
-        CvOptimizationService,
       ],
     };
   }

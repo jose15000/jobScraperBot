@@ -1,5 +1,6 @@
 import {
   DynamicModule,
+  Global,
   Inject,
   Injectable,
   Logger,
@@ -415,6 +416,7 @@ export class LioApplyCoreService {
   }
 }
 
+@Global()
 @Module({})
 export class LioApplyCoreModule {
   static register(options?: LioApplyOptions): DynamicModule {

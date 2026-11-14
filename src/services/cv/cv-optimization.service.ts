@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import { JobConfigService } from '../../config/job-config.service';
 import { JobHistoryRepository } from '../../repositories/job-history.repository';
@@ -25,12 +25,12 @@ export class CvOptimizationService {
 
   constructor(
     private readonly jobConfigService: JobConfigService,
-    private readonly historyRepository: JobHistoryRepository,
+    @Optional() private readonly historyRepository: JobHistoryRepository,
     private readonly cvLlmService: CvLlmService,
     private readonly jevService: JevService,
     private readonly typstTemplateService: TypstTemplateService,
     private readonly typstCompilerService: TypstCompilerService,
-    private readonly botService: BotService,
+    @Optional() private readonly botService: BotService,
   ) {}
 
   /**
