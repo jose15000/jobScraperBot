@@ -14,7 +14,13 @@ The project is built on **NestJS** and follows a **Clean Architecture / Service-
 
 ### Directory Structure:
 ```text
+packages/                  # Workspace package manifests (@lioapply/core, @lioapply/providers, @lioapply/cv, @lioapply/mcp)
 src/
+  ├── packages/
+  │     ├── core/          # @lioapply/core (createLioApply SDK, LioApplyCoreModule, System-One Classifier, Deduplication)
+  │     ├── providers/     # @lioapply/providers & subpath exports (@lioapply/providers/linkedin, /glassdoor, /remotar)
+  │     ├── cv/            # @lioapply/cv (createCvEngine SDK & LioApplyCvModule for ATS CV optimization + Typst PDF)
+  │     └── mcp/           # @lioapply/mcp (Official Model Context Protocol JSON-RPC 2.0 server over stdio)
   ├── database/
   │     └── schema.ts            # Drizzle ORM table definitions, constraints and indexes
   ├── interfaces/

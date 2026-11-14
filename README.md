@@ -152,6 +152,44 @@ OPEN_ROUTER_API_KEY=sk-or-v1-...
      ```bash
      pnpm run cv 42
      ```
+   - **Iniciar o Servidor MCP oficial (`@lioapply/mcp` via stdio para Claude / Cursor / Antigravity):**
+     ```bash
+     pnpm run mcp
+     ```
+
+---
+
+## 📦 Uso como SDK / Pacotes Injetáveis (`@lioapply/*`)
+
+Você também pode importar os pacotes modulares diretamente em código TypeScript ou no seu próprio módulo NestJS:
+
+```typescript
+import { createLioApply } from '@lioapply/core';
+import { createLinkedinProvider } from '@lioapply/providers/linkedin';
+import { createGlassdoorProvider } from '@lioapply/providers/glassdoor';
+import { createRemotarProvider } from '@lioapply/providers/remotar';
+
+const lio = createLioApply({
+  providers: [
+    createLinkedinProvider(),
+    createGlassdoorProvider(),
+    createRemotarProvider(),
+  ],
+  classifier: {
+    provider: 'auto', // 'openrouter' | 'groq' | 'gemini' | 'ollama' | 'laya' | 'kev' | 'jev'
+  },
+});
+
+// 1. Buscar, deduplicar e classificar vagas em lote
+const { approvedJobs, digestText } = await lio.searchAndClassify();
+
+// 2. Gerar currículo em PDF via Typst sob demanda
+const { pdfBuffer, fileName, evaluation } = await lio.cv.optimizeForJob({
+  title: approvedJobs[0].title,
+  company: approvedJobs[0].company,
+  description: approvedJobs[0].previewText,
+});
+```
 
 ---
 

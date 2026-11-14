@@ -5,6 +5,7 @@ import { CvOptimizationService } from './services/cv/cv-optimization.service';
 import { Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { createLioApplyMcpServer } from './packages/mcp';
 
 async function registerEvolutionWebhook(port: number, logger: Logger) {
   const baseUrl =
@@ -64,6 +65,13 @@ async function registerEvolutionWebhook(port: number, logger: Logger) {
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const args = process.argv.slice(2);
+
+  // Mode 0: MCP Server over stdio (--mcp)
+  if (args.includes('--mcp')) {
+    const mcpServer = createLioApplyMcpServer();
+    mcpServer.startStdio();
+    return;
+  }
 
   // Mode 1: Lightweight HTTP Webhook Listener (--listen)
   if (args.includes('--listen')) {

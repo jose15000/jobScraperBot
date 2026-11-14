@@ -7,6 +7,7 @@ export interface AppJobConfig {
   search: {
     queries: string[];
     locations: ILocationOption[];
+    providers?: string[];
   };
   profile?: Partial<UserProfileCriteria>;
   classifier?: Partial<ClassifierProviderConfig>;

@@ -1,0 +1,14 @@
+{
+  "name": "@lioapply/cv",
+  "version": "1.0.0",
+  "description": "LioApply On-Demand ATS Resume Optimizer & Typst PDF Compiler",
+  "main": "../../dist/packages/cv/index.js",
+  "types": "../../dist/packages/cv/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "../../dist/packages/cv/index.d.ts",
+      "default": "../../dist/packages/cv/index.js"
+    }
+  },
+  "license": "MIT"
+}

@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { BotService } from '../bot/bot.service';
 import { JobHistoryRepository } from '../../repositories/job-history.repository';
 import { JobDigestFormatter, ApprovedJobDto } from './job-digest.formatter';
@@ -11,6 +11,8 @@ import {
   normalizeScrapedPost,
 } from '../../utils/deduplication';
 import { JobConfigService } from '../../config/job-config.service';
+import { IProviderConfig } from '../../interfaces/isearch/isearch.interface';
+import { LIOAPPLY_PROVIDERS } from '../../packages/core';
 
 @Injectable()
 export class TaskService {
@@ -24,12 +26,19 @@ export class TaskService {
     private readonly digestFormatter: JobDigestFormatter,
     private readonly jobDeduplicationService: JobDeduplicationService,
     private readonly jobConfigService: JobConfigService,
+    @Optional()
+    @Inject(LIOAPPLY_PROVIDERS)
+    private readonly injectedProviders?: IProviderConfig[],
   ) {}
 
   async runScrapeJob(): Promise<ApprovedJobDto[]> {
     const queries = this.jobConfigService.getQueries();
     const locations = this.jobConfigService.getLocations();
     const userProfile = this.jobConfigService.getUserProfile();
+    const activeProviders =
+      this.injectedProviders ||
+      this.jobConfigService.getProviders?.() ||
+      DEFAULT_WEB_PROVIDERS;
 
     this.logger.log('🚀 Iniciando pipeline consolidado de busca de vagas...');
     this.logger.log(
@@ -40,7 +49,7 @@ export class TaskService {
     const rawPosts =
       typeof this.botService.scrapeProviders === 'function'
         ? await this.botService.scrapeProviders(
-            DEFAULT_WEB_PROVIDERS,
+            activeProviders,
             queries,
             locations,
           )

@@ -1,0 +1,26 @@
+{
+  "name": "@lioapply/providers",
+  "version": "1.0.0",
+  "description": "LioApply Injectable Job Providers (LinkedIn, Glassdoor, Remotar) with subpath exports",
+  "main": "../../dist/packages/providers/index.js",
+  "types": "../../dist/packages/providers/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "../../dist/packages/providers/index.d.ts",
+      "default": "../../dist/packages/providers/index.js"
+    },
+    "./linkedin": {
+      "types": "../../dist/packages/providers/linkedin.d.ts",
+      "default": "../../dist/packages/providers/linkedin.js"
+    },
+    "./glassdoor": {
+      "types": "../../dist/packages/providers/glassdoor.d.ts",
+      "default": "../../dist/packages/providers/glassdoor.js"
+    },
+    "./remotar": {
+      "types": "../../dist/packages/providers/remotar.d.ts",
+      "default": "../../dist/packages/providers/remotar.js"
+    }
+  },
+  "license": "MIT"
+}

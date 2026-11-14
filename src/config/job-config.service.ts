@@ -4,9 +4,10 @@ import * as path from 'path';
 import * as YAML from 'yaml';
 import { AppJobConfig } from '../interfaces/job-config/job-config.interface';
 import { UserProfileCriteria } from '../utils/jev';
-import { ILocationOption } from '../interfaces/isearch/isearch.interface';
+import { ILocationOption, IProviderConfig } from '../interfaces/isearch/isearch.interface';
 import { BaseCvData, CvOptimizationConfig } from '../interfaces/cv/cv.interface';
 import { ClassifierProviderConfig } from '../services/jev/classifier-providers';
+import { resolveProviders } from '../packages/providers';
 
 @Injectable()
 export class JobConfigService implements OnModuleInit {
@@ -204,6 +205,13 @@ export class JobConfigService implements OnModuleInit {
     return this.config.search.locations;
   }
 
+  getProviders(): IProviderConfig[] {
+    const envProviders = process.env.SEARCH_PROVIDERS
+      ? process.env.SEARCH_PROVIDERS.split(',').map((p) => p.trim()).filter(Boolean)
+      : undefined;
+    return resolveProviders(envProviders || this.config?.search?.providers);
+  }
+
   getUserProfile(): UserProfileCriteria {
     return {
       targetRoles: this.config.profile?.targetRoles || [],
@@ -306,6 +314,11 @@ export class JobConfigService implements OnModuleInit {
         ? raw.search.locations
         : [];
 
+    const providers: string[] | undefined =
+      Array.isArray(raw?.search?.providers)
+        ? raw.search.providers.map((p: any) => String(p).trim()).filter(Boolean)
+        : undefined;
+
     const profile: Partial<UserProfileCriteria> =
       raw?.profile && typeof raw.profile === 'object'
         ? {
@@ -348,6 +361,7 @@ export class JobConfigService implements OnModuleInit {
       search: {
         queries,
         locations,
+        providers,
       },
       profile,
       classifier,

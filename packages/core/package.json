@@ -1,0 +1,14 @@
+{
+  "name": "@lioapply/core",
+  "version": "1.0.0",
+  "description": "LioApply Core Engine — System-One Multi-Provider Classifier, Deduplication, Config, and SDK",
+  "main": "../../dist/packages/core/index.js",
+  "types": "../../dist/packages/core/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "../../dist/packages/core/index.d.ts",
+      "default": "../../dist/packages/core/index.js"
+    }
+  },
+  "license": "MIT"
+}

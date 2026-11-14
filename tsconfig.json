@@ -14,6 +14,13 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@lioapply/core": ["src/packages/core/index.ts"],
+      "@lioapply/providers": ["src/packages/providers/index.ts"],
+      "@lioapply/providers/*": ["src/packages/providers/*.ts"],
+      "@lioapply/cv": ["src/packages/cv/index.ts"],
+      "@lioapply/mcp": ["src/packages/mcp/index.ts"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
