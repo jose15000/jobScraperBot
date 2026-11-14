@@ -1,7 +1,7 @@
 {
-  "name": "jobsearchbot",
-  "version": "0.0.1",
-  "description": "",
+  "name": "lioapply",
+  "version": "1.0.0",
+  "description": "LioApply — Open-source AI job scraping, System-One semantic filtering, and on-demand ATS resume tailoring via Typst & WhatsApp",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

@@ -1,187 +1,170 @@
-# 🚀 JobSearchBot
+# 🦁 LioApply
 
-Um bot automatizado e inteligente desenvolvido em **NestJS** para buscar, filtrar e notificar vagas de desenvolvimento de software diretamente no seu WhatsApp. Ele combina raspagem de sites tradicionais de vagas (web scraping) com a captura de posts informais de recrutadores no feed do LinkedIn (via API do Apify), aplicando heurísticas de pontuação e deduplicação automática.
+**LioApply** é uma plataforma **100% Open-Source e gratuita** desenvolvida em **NestJS** para automatizar a busca de vagas de engenharia de software, filtragem semântica inteligente (**System-One Multi-Provider Classifier**) e **geração sob demanda de currículos otimizados para ATS em PDF (via Typst)** diretamente no seu **WhatsApp**.
 
 ---
 
-## 🛠️ Arquitetura & Como Funciona
+## ✨ Principais Funcionalidades
+
+- **🔍 Scraping Multi-Plataforma Automatizado:** Coleta vagas em portais como **LinkedIn**, **Glassdoor** e **Remotar** via Playwright Stealth e Apify, totalmente configurável via YAML (`jobs.config.yaml`).
+- **🧹 Deduplicação Inteligente (Título + Empresa):** Normaliza títulos e nomes de empresas para nunca enviar a mesma vaga duas vezes, mesmo quando republicada com links diferentes.
+- **🧠 Classificador Semântico System-One Multi-Provider (em Lote):**
+  - Avalia vagas inéditas em lote usando julgamentos probabilísticos tipados (`noul`: `matches_profile` e `is_actual_job_offer`) com **compressão de rubricas** (~80% de economia de tokens).
+  - **Liberdade de Escolha (`CLASSIFIER_PROVIDER`):** Funciona 100% grátis com **OpenRouter** (`openrouter/free`), **Groq** (`llama-3.1-8b-instant`), **Google Gemini** (`gemini-2.5-flash-lite`), **Ollama** local, **Laya**, **Kev** ou **TypeSafe Jev**.
+- **📄 Otimização de Currículo ATS Sob Demanda (`/cv` + Typst PDF):**
+  - Cada vaga aprovada no resumo do WhatsApp recebe um código `[#ID]`.
+  - Basta responder **`/cv 42`** (ou `/cv <link_ou_descrição_da_vaga>`) no WhatsApp para o LioApply reescrever seu currículo base (`cv.base.yaml`) focado nas palavras-chave daquela vaga, compilar um PDF impecável em milissegundos via **Typst** e enviar o documento pronto no seu WhatsApp!
+
+---
+
+## 🛠️ Arquitetura & Fluxo de Execução
 
 ```mermaid
-graph TD
-    A[Cron Schedule] --> B[TaskService]
-    B --> C[Scrape Web Providers<br/>Playwright / HTML Parsing]
-    B --> D[Scrape LinkedIn Feed<br/>Apify Actor Sync API]
-    C --> E[Raw Posts Array]
-    D --> E
-    E --> F[Deduplicação Título + Empresa<br/>JobDeduplicationService / PostgreSQL]
-    F --> G[Filtro Heurístico IA<br/>JevService / TypeSafe Jev]
-    G -->|Aprovadas| H[Formatação Digest<br/>JobDigestFormatter]
-    H --> I[Evolution API]
-    I --> J[WhatsApp Digest Message]
+flowchart TD
+    subgraph Pipeline["1. Busca & Classificação de Vagas (Cron / One-Shot)"]
+        A["Cron / CLI (--run-now)"] --> B["TaskService"]
+        B --> C["Playwright & Apify Scrapers<br/>(LinkedIn, Glassdoor, Remotar)"]
+        C --> D["Deduplicação Título + Empresa<br/>(JobDeduplicationService + PostgreSQL)"]
+        D --> E["System-One Batch Classifier<br/>(OpenRouter / Groq / Gemini / Ollama / Laya / Kev / Jev)"]
+        E -->|"Aprovadas (score >= 50%)"| F["JobDigestFormatter<br/>(Gera Resumo com Tags [#ID])"]
+        F --> G["Evolution API -> WhatsApp Digest"]
+    end
+
+    subgraph CV["2. Currículo ATS Sob Demanda (/cv)"]
+        H["Usuário envia '/cv 42' no WhatsApp<br/>ou roda 'pnpm cv 42'"] --> I["CvOptimizationService"]
+        I --> J["CvLlmService (OpenRouter)<br/>Reescreve Summary, Bullets e Skills"]
+        J --> K["Auditoria de Credibilidade & Score ATS"]
+        K --> L["TypstCompilerService<br/>Compila PDF em ~50ms"]
+        L --> M["Evolution API -> Envia PDF no WhatsApp"]
+    end
 ```
-
-O bot executa em ciclos programados (controlados por cron local ou da nuvem) realizando as seguintes etapas:
-
-1. **Coleta de Vagas (Browser Scraping)**:
-   Acessa os portais de vagas configurados (`Glassdoor`, `Remotar`, `Indeed`, `LinkedIn Jobs`) usando seletores dinâmicos de HTML carregados com o Playwright para extrair títulos, empresas e links.
-2. **Coleta de Feed (LinkedIn Posts)**:
-   Invoca o actor do Apify `harvestapi/linkedin-post-search` de forma síncrona. Ele envia queries booleanas otimizadas e traz o texto cru das publicações recentes no feed do LinkedIn (onde recrutadores divulgam vagas sem registrá-las na aba de vagas tradicional).
-3. **Deduplicação por Título e Empresa**:
-   Para evitar notificações repetidas e economizar chamadas de IA, a deduplicação compara a combinação de título e empresa normalizados (sem depender do link). A verificação cruza as vagas contra o histórico recente do PostgreSQL e descarta duplicatas dentro do mesmo lote antes da avaliação heurística.
-4. **Filtro Heurístico (TypeSafe Jev AI)**:
-   O conteúdo das vagas inéditas é avaliado pelo modelo System One do **TypeSafe (Jev)** via julgamento probabilístico tipado (`noul`):
-   - **Fit com o Perfil**: Avalia se a vaga é de fato para desenvolvedor Júnior/Pleno com a stack desejada (React, Node.js, TypeScript, etc.) e na modalidade desejada (Remoto ou Curitiba).
-   - **Eliminação de Falsos Positivos**: Elimina com precisão anúncios de cursos, processos de mentoria, posts de candidatos buscando recolocação ("Open to Work") e vagas de nível Sênior/Lead.
-5. **Digest e Notificação**:
-   As vagas aprovadas são consolidadas em um único resumo legível e disparadas no WhatsApp do usuário através da **Evolution API**, minimizando o spam e respeitando os limites da API.
 
 ---
 
 ## 📂 Estrutura do Projeto
 
-```bash
-├── .agents/                    # Workflows do agente autônomo
-├── context/                    # Grafos de Contexto e Raciocínio (ContextAtlas)
-├── drizzle.config.ts           # Configuração do Drizzle Kit para PostgreSQL
+```text
+├── .github/workflows/          # Pipeline CI/CD (Build, Testes e Deploy via SSH)
+├── jobs.config.yaml            # Configuração declarativa de buscas, perfil e classificador
+├── cv.base.example.yaml        # Template de currículo base em YAML para otimização ATS
 ├── src/
 │   ├── config/
-│   │   └── providers.ts        # Definição dos seletores e URLs de plataformas (Glassdoor, Indeed, Remotar, etc.)
+│   │   ├── job-config.service.ts # Carregador de configuração YAML / ENV
+│   │   └── providers.ts          # Seletores e URLs dos portais (LinkedIn, Glassdoor, Remotar)
+│   ├── controllers/
+│   │   └── whatsapp-webhook.controller.ts # Webhook da Evolution API para comandos '/cv'
 │   ├── database/
-│   │   └── schema.ts           # Schemas e tabelas Drizzle ORM (sent_jobs)
-│   ├── interfaces/
-│   │   └── isearch/            # Definições de contratos e interfaces de scraping
+│   │   └── schema.ts             # Tabelas Drizzle ORM (sent_jobs)
 │   ├── repositories/
-│   │   └── job-history.repository.ts # Repositório Drizzle ORM para histórico e deduplicação
+│   │   └── job-history.repository.ts # Persistência e consulta de vagas no PostgreSQL
 │   ├── services/
-│   │   ├── bot/                # Agrupa requisições Playwright e chamadas Evolution API
-│   │   ├── jev/                # Serviço de avaliação heurística de vagas via TypeSafe Jev
-│   │   ├── scrapservice/       # Motor genérico de scraping e integração com Apify
-│   │   ├── task-service/       # Orquestrador principal do pipeline (SRP)
-│   │   └── whatsapp-service/   # Serviço de comunicação direta com a Evolution API
+│   │   ├── cv/                   # Motor de otimização ATS (OpenRouter + Typst PDF)
+│   │   ├── jev/                  # Classificador System-One Multi-Provider (Batch + Rubric Compression)
+│   │   ├── task-service/         # Orquestrador do pipeline e formatador de Digest
+│   │   └── whatsapp-service/     # Integração com a Evolution API (texto e documentos PDF)
 │   ├── utils/
-│   │   ├── deduplication.ts    # Funções e serviço injetável de deduplicação por título e empresa
-│   │   └── jev.ts              # Primitivas tipadas do TypeSafe Noul para avaliação heurística
-│   ├── app.module.ts           # Módulo raiz do NestJS
-│   └── main.ts                 # Ponto de entrada do aplicativo
-├── docker-compose.yml          # Definição do ambiente completo (Postgres, PgAdmin, Evolution API, NestJS)
-└── package.json
+│   │   ├── deduplication.ts      # Normalização e deduplicação por título + empresa
+│   │   └── jev.ts                # Primitivas System-One ('noul', avaliação individual e em lote)
+│   └── main.ts                   # Entrypoint CLI (--run-now, --listen, --cv)
+└── docker-compose.yml            # PostgreSQL, Evolution API e PgAdmin
 ```
 
 ---
 
-## 🚀 Como Rodar na Própria Máquina
-
-Você pode optar por rodar o projeto inteiramente via **Docker Compose** (que já inclui a Evolution API, Postgres, PgAdmin e a aplicação) ou rodar a aplicação **localmente** utilizando serviços Docker de apoio.
+## 🚀 Como Rodar (Quick Start)
 
 ### Pré-requisitos
-* **Node.js** (versão 20 ou superior recomendada)
-* **pnpm** (gerenciador de pacotes recomendado)
-* **Docker & Docker Compose**
-* Uma conta na **Apify** (com token da API para o LinkedIn Scraper)
+- **Node.js 20+** e **pnpm**
+- **Docker & Docker Compose** (para PostgreSQL e Evolution API)
+- **Typst CLI** instalado no sistema (para compilação de currículos em PDF):
+  ```bash
+  curl -fsSL https://typst.community/typst-install/install.sh | sh
+  ```
 
----
-
-### Passo 1: Configurar Variáveis de Ambiente
-Copie ou crie um arquivo `.env` na raiz do projeto com as seguintes variáveis de configuração:
-
-```env
-# URL de execução síncrona do Actor do Apify (LinkedIn Post Search)
-APIFY_URL=https://api.apify.com/v2/actors/harvestapi~linkedin-post-search/runs?token=SEU_TOKEN_APIFY
-
-# Configurações do Banco de Dados PostgreSQL
-DATABASE_ENABLED=true
-DATABASE_PROVIDER=postgresql
-DATABASE_CONNECTION_URI=postgresql://postgres:PASSWORD@localhost:5432/postgres?schema=public
-
-# Configurações da Evolution API (WhatsApp)
-EVOLUTION_API_URL=http://localhost:8080
-AUTHENTICATION_API_KEY=mude-me # Token para segurança da Evolution API
-apiKey=mude-me                  # Mesmo token para comunicação interna
-WHATSAPP_NUMBER=55XXXXXXXXXXX   # Seu número do WhatsApp completo (com DDD)
-INSTANCE_NAME=job-bot           # Nome da instância WhatsApp a ser criada/utilizada
-
-# Configurações Adicionais da Evolution API (Salvar dados no DB se necessário)
-DATABASE_SAVE_DATA_INSTANCE=true
-DATABASE_SAVE_DATA_NEW_MESSAGE=true
-DATABASE_SAVE_MESSAGE_UPDATE=true
-DATABASE_SAVE_DATA_CONTACTS=true
-DATABASE_SAVE_DATA_CHATS=true
-DATABASE_SAVE_DATA_LABELS=true
-DATABASE_SAVE_DATA_HISTORIC=true
-CACHE_LOCAL_ENABLED=true
-```
-
----
-
-### Passo 2: Inicializar Serviços Auxiliares (Postgres, Evolution API)
-Antes de rodar a aplicação NestJS localmente, suba os containers do PostgreSQL e da Evolution API:
+### 1. Clonar e Instalar Dependências
 
 ```bash
-docker compose up -d postgres evolution-api pgadmin
+git clone https://github.com/LioApply/LioApply.git
+cd LioApply
+pnpm install
 ```
 
-> [!NOTE]
-> * **PostgreSQL**: Rodará na porta `5432` com usuário `postgres` e senha `PASSWORD`.
-> * **Evolution API**: Rodará na porta `8080`. Você precisará escanear o QR Code para conectar seu WhatsApp à instância criada pelo bot.
-> * **PgAdmin**: Disponível na porta `4000` (email: `admin@admin.com` / senha: `PASSWORD`) para inspecionar o banco de dados.
+### 2. Configurar seu Currículo Base e Preferências de Vagas
 
----
-
-### Passo 3: Instalar as Dependências e Rodar o NestJS
-
-1. **Instale os pacotes**:
+1. Crie seu arquivo `cv.base.yaml` a partir do exemplo (o `cv.base.yaml` fica no `.gitignore` para proteger seus dados pessoais):
    ```bash
-   pnpm install
+   cp cv.base.example.yaml cv.base.yaml
    ```
+2. Edite o arquivo `jobs.config.yaml` com os cargos (`queries`), localidades (`locations`) e tecnologias do seu perfil (`profile`).
 
-2. **Execute o projeto em modo desenvolvimento (Live Watch)**:
+### 3. Configurar o `.env`
+
+Copie o `.env.example` para `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Preencha suas variáveis no `.env`:
+
+```env
+# Banco de Dados PostgreSQL
+DATABASE_CONNECTION_URI=postgresql://postgres:PASSWORD@localhost:5432/postgres?schema=public
+
+# Evolution API (WhatsApp)
+EVOLUTION_API_URL=http://localhost:8080
+apiKey=sua-chave-evolution
+INSTANCE_NAME=lioapply
+WHATSAPP_NUMBER=5511999999999
+
+# Classificador Semântico System-One & Otimização de Currículo (100% Gratuito)
+# Opções de CLASSIFIER_PROVIDER: auto | openrouter | groq | gemini | ollama | laya | kev | jev
+CLASSIFIER_PROVIDER=auto
+OPEN_ROUTER_API_KEY=sk-or-v1-...
+# GROQ_API_KEY=gsk_...
+# GEMINI_API_KEY=AIza...
+# JEV_API_KEY=...
+```
+
+> [!TIP]
+> Deixando `CLASSIFIER_PROVIDER=auto`, o LioApply usa automaticamente a chave gratuita que você tiver configurada (`GROQ_API_KEY`, `GEMINI_API_KEY`, `OPEN_ROUTER_API_KEY` ou `JEV_API_KEY`) tanto para classificar vagas em lote quanto para gerar currículos sob demanda.
+
+### 4. Subir Serviços Auxiliares e Executar
+
+1. Suba o PostgreSQL e a Evolution API via Docker:
    ```bash
-   pnpm run start:dev
+   docker compose up -d postgres evolution-api
    ```
-
-3. **Crie a build de produção (caso queira rodar otimizado)**:
+2. Compile o projeto:
    ```bash
    pnpm run build
-   pnpm run start:prod
    ```
+3. **Comandos disponíveis:**
+   - **Executar busca e filtragem de vagas agora (One-Shot):**
+     ```bash
+     node dist/main.js --run-now
+     ```
+   - **Iniciar o servidor de escuta para comandos `/cv` do WhatsApp:**
+     ```bash
+     pnpm run listen
+     ```
+   - **Gerar um currículo otimizado via terminal (por ID da vaga, link ou texto):**
+     ```bash
+     pnpm run cv 42
+     ```
 
 ---
 
-### Passo 4: Conectar seu WhatsApp (Evolution API)
-Uma vez que a Evolution API esteja rodando no Docker:
-1. Acesse o painel ou use a própria requisição do Bot para gerar o QR Code da instância `job-bot`.
-2. Abra o WhatsApp no seu celular, vá em **Aparelhos Conectados** -> **Conectar um Aparelho** e escaneie o código.
-3. A partir deste momento, sempre que o bot for executado, os alertas de vagas qualificadas chegarão diretamente no seu número do WhatsApp configurado em `WHATSAPP_NUMBER`.
+## 🧪 Testes Automatizados
+
+Para rodar toda a suíte de testes unitários e de integração (incluindo o classificador System-One Multi-Provider e o compilador Typst):
+
+```bash
+pnpm test
+```
 
 ---
 
-## 🧩 Adicionando Novos Portais de Vaga (Providers)
+## 📄 Licença
 
-Para incluir novos sites ao pipeline de Playwright:
-1. Abra o arquivo `src/config/providers.ts`.
-2. Crie e exporte uma nova constante do tipo `IProviderConfig`. Exemplo:
-   ```typescript
-   export const meuNovoProvider: IProviderConfig = {
-       name: 'nome_do_site',
-       buildSearchUrl: (query: string) => `https://site.com/busca?q=${encodeURIComponent(query)}`,
-       selectors: {
-           container: '.classe-card-vaga',
-           jobTitle: 'h2.titulo',
-           companyName: '.nome-empresa',
-           jobLink: 'a.link-vaga',
-           waitSelector: '.lista-vagas',
-           baseUrl: 'https://site.com'
-       }
-   }
-   ```
-3. Importe e adicione o provider ao array de providers em `src/services/task-service/task-service.service.ts` no método `scrapeWebProviders`.
-
----
-
-## 🧠 ContextAtlas Graph
-O projeto conta com o **ContextAtlas** integrado para registrar e preservar o grafo de decisões arquiteturais e mudanças no código de maneira otimizada. Os arquivos gerados de histórico ficam localizados na pasta `/context`.
-
-* Para rodar o MCP Server correspondente:
-  ```bash
-  npx mcp-atlas
-  ```
+Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
