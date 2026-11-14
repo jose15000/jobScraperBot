@@ -15,11 +15,11 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@lioapply/core": ["src/packages/core/index.ts"],
-      "@lioapply/providers": ["src/packages/providers/index.ts"],
-      "@lioapply/providers/*": ["src/packages/providers/*.ts"],
-      "@lioapply/cv": ["src/packages/cv/index.ts"],
-      "@lioapply/mcp": ["src/packages/mcp/index.ts"]
+      "@lioapply/core": ["src/packages/core"],
+      "@lioapply/providers": ["src/packages/providers"],
+      "@lioapply/providers/*": ["src/packages/providers/*"],
+      "@lioapply/cv": ["src/packages/cv"],
+      "@lioapply/mcp": ["src/packages/mcp"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -258,6 +258,17 @@
         "description": "Wrap NestFactory.createApplicationContext inside try/catch block in main.ts for safe error handling and cleanup",
         "timestamp": "2026-11-10T01:25:21.704Z"
       }
+    },
+    {
+      "graphType": "Code",
+      "id": "0ed795a8-5fea-4c62-97a3-332608ba130d",
+      "type": "code_change",
+      "data": {
+        "file": "tsconfig.json",
+        "agentThought": "fix",
+        "description": "Fixed runtime MODULE_NOT_FOUND error ('Cannot find module ../../packages/core/index.ts') in dist build by removing the explicit '.ts' file extension from tsconfig.json paths so NestJS path-alias rewriting emits extensionless paths ('../../packages/core') that Node.js CJS loader resolves to index.js.",
+        "timestamp": "2026-11-14T03:38:29.032Z"
+      }
     }
   ],
   "edges": [
@@ -374,6 +385,11 @@
     {
       "from": "481085d8-7c7c-4ad9-99f1-34a399669e27",
       "to": "src/main.ts",
+      "type": "MODIFIES"
+    },
+    {
+      "from": "0ed795a8-5fea-4c62-97a3-332608ba130d",
+      "to": "tsconfig.json",
       "type": "MODIFIES"
     }
   ]
