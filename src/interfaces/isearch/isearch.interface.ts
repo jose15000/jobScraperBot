@@ -19,7 +19,8 @@ export interface IProviderSelectors {
 
 export interface IProviderConfig {
   name: string;
-  buildSearchUrl: (query: string, location?: any) => string;
+  buildSearchUrl: (query: string, location?: ILocationOption) => string;
+  supportsLocation?: (location: ILocationOption) => boolean;
   isLinkedinPosts?: boolean;
   selectors: IProviderSelectors;
 }

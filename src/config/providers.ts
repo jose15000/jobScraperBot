@@ -42,6 +42,8 @@ export const linkedinProvider: IProviderConfig = {
 };
 export const remotarProvider: IProviderConfig = {
   name: 'remotar',
+  supportsLocation: (location?: ILocationOption) =>
+    Boolean(location?.workplaceTypes?.includes('remote')),
   buildSearchUrl: (query: string) =>
     `https://remotar.com.br/search/jobs?q=${encodeURIComponent(query)}&c=13&t=4&t=17&t=21`,
 
@@ -54,5 +56,11 @@ export const remotarProvider: IProviderConfig = {
     baseUrl: 'https://remotar.com.br',
   },
 };
+
+export const DEFAULT_WEB_PROVIDERS: IProviderConfig[] = [
+  glassdoorProvider,
+  linkedinProvider,
+  remotarProvider,
+];
 
 

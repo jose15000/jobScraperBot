@@ -1,18 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { BotService } from '../bot/bot.service';
 import { JobHistoryRepository } from '../../repositories/job-history.repository';
 import { JobDigestFormatter, ApprovedJobDto } from './job-digest.formatter';
-import {
-  glassdoorProvider,
-  linkedinProvider,
-  remotarProvider,
-} from '../../config/providers';
+import { DEFAULT_WEB_PROVIDERS } from '../../config/providers';
 import { LinkedinApifyService } from '../Linkedin/linkedin-apify.service';
-import { ScrapedPost } from 'src/interfaces/ScrapedPost/iscrapedpost.interface';
-import { ILocationOption } from 'src/interfaces/isearch/isearch.interface';
-
 import { JevService } from '../jev/jev.service';
-import { JobDeduplicationService } from '../../utils/deduplication';
+import {
+  JobDeduplicationService,
+  NormalizedCandidateJob,
+  normalizeScrapedPost,
+} from '../../utils/deduplication';
 import { JobConfigService } from '../../config/job-config.service';
 
 @Injectable()
@@ -23,13 +20,13 @@ export class TaskService {
     private readonly botService: BotService,
     private readonly jevService: JevService,
     private readonly historyRepository: JobHistoryRepository,
-    private readonly scrapeLinkedinPosts: LinkedinApifyService,
+    @Optional() private readonly scrapeLinkedinPosts: LinkedinApifyService,
     private readonly digestFormatter: JobDigestFormatter,
     private readonly jobDeduplicationService: JobDeduplicationService,
     private readonly jobConfigService: JobConfigService,
-  ) { }
+  ) {}
 
-  async runScrapeJob() {
+  async runScrapeJob(): Promise<ApprovedJobDto[]> {
     const queries = this.jobConfigService.getQueries();
     const locations = this.jobConfigService.getLocations();
     const userProfile = this.jobConfigService.getUserProfile();
@@ -38,265 +35,136 @@ export class TaskService {
     this.logger.log(
       `🔍 Queries configuradas (${queries.length}): ${queries.join(', ')}`,
     );
-    const webScrapedPosts = await this.scrapeWebProviders(queries, locations);
 
-    // 2. Unifica todos os posts brutos
-    const rawPosts = [...webScrapedPosts];
+    // 1. Coleta unificada em sessão única do navegador com concorrência controlada
+    const rawPosts =
+      typeof this.botService.scrapeProviders === 'function'
+        ? await this.botService.scrapeProviders(
+            DEFAULT_WEB_PROVIDERS,
+            queries,
+            locations,
+          )
+        : [];
+
     this.logger.log(
       `Total de posts brutos coletados: ${rawPosts.length}. Carregando histórico do banco e iniciando filtragem...`,
     );
 
-    // Carrega histórico recente para deduplicação por título e empresa
-    const recentStoredJobs = await this.historyRepository.getRecentJobs(300, 30);
-    this.logger.log(
-      `📚 ${recentStoredJobs.length} vagas recentes carregadas do banco para checagem de duplicatas.`,
+    // 2. Deduplicação por Título + Empresa contra histórico recente do PostgreSQL
+    const recentStoredJobs = await this.historyRepository.getRecentJobs(
+      300,
+      30,
     );
+    const seenJobKeys =
+      this.jobDeduplicationService.createKeySet(recentStoredJobs);
 
-    // Inicializa conjunto de chaves únicas (título + empresa) com base no banco
-    const seenJobKeys = this.jobDeduplicationService.createKeySet(recentStoredJobs);
+    const uniqueCandidates: NormalizedCandidateJob[] = [];
+    for (const post of rawPosts) {
+      const normalized = normalizeScrapedPost(post);
+      if (!normalized) continue;
+
+      if (
+        this.jobDeduplicationService.isDuplicate(
+          { title: normalized.title, company: normalized.company },
+          seenJobKeys,
+        )
+      ) {
+        continue;
+      }
+
+      seenJobKeys.add(
+        this.jobDeduplicationService.createKey(
+          normalized.title,
+          normalized.company,
+        ),
+      );
+      uniqueCandidates.push(normalized);
+    }
+
+    if (uniqueCandidates.length === 0) {
+      this.logger.log('Nenhuma vaga inédita encontrada nesta execução.');
+      return [];
+    }
+
+    // 3. Classificação Semântica em Lote (System-One Multi-Provider)
+    this.logger.log(
+      `🧠 Classificando ${uniqueCandidates.length} vagas inéditas com o Classificador System-One...`,
+    );
+    const evaluations =
+      typeof this.jevService.evaluateJobsBatch === 'function'
+        ? await this.jevService.evaluateJobsBatch(uniqueCandidates, userProfile)
+        : await Promise.all(
+            uniqueCandidates.map((c) =>
+              this.jevService.evaluateJob(c, userProfile),
+            ),
+          );
 
     const approvedJobs: ApprovedJobDto[] = [];
-    const newlySentJobs: {
+    const newlySentJobs: Array<{
       url: string;
       title: string;
       company?: string;
       description?: string;
-    }[] = [];
-
-    // 3. Processamento e Deduplicação (Título + Empresa)
-    const uniqueCandidates: Array<{
-      title: string;
-      company: string;
-      text: string;
-      location?: string;
-      url: string;
     }> = [];
 
-    for (const post of rawPosts) {
-      const text = post.text || '';
-      let url = post.url || '';
+    for (let i = 0; i < uniqueCandidates.length; i++) {
+      const candidate = uniqueCandidates[i];
+      const result = evaluations[i];
+      if (!result?.shouldApply) continue;
 
-      // Extração robusta de title e company
-      let title = post.title?.trim() || '';
-      let company = post.company?.trim() || '';
+      this.logger.log(
+        `✅ Vaga aprovada (score: ${result.score}): ${candidate.title}${candidate.company ? ` (${candidate.company})` : ''}`,
+      );
+      approvedJobs.push({
+        title: candidate.title,
+        company: candidate.company,
+        score: result.score,
+        reason: result.reason,
+        url: candidate.url,
+        previewText: candidate.text
+          .substring(0, 150)
+          .replace(/\n/g, ' ')
+          .trim(),
+      });
 
-      // Fallback para caso o post venha apenas com text formatado "Vaga: ... | Empresa: ..."
-      if (!title && text) {
-        const textMatch = text.match(/Vaga:\s*(.*?)(?:\s*\|\s*Empresa:\s*(.*))?$/i);
-        if (textMatch) {
-          title = textMatch[1]?.trim() || '';
-          if (!company && textMatch[2]) {
-            company = textMatch[2]?.trim() || '';
-          }
-        }
-      }
-
-      if (!title) {
-        title =
-          text.split('\n')[0].replace(/[#*•-]/g, '').trim().substring(0, 100) ||
-          'Desenvolvedor';
-      }
-
-      // Se o título ainda contiver o prefixo "Vaga: ... | Empresa: ..."
-      const titleMatch = title.match(/^Vaga:\s*(.*?)(?:\s*\|\s*Empresa:\s*(.*))?$/i);
-      if (titleMatch) {
-        title = titleMatch[1]?.trim() || title;
-        if (!company && titleMatch[2]) {
-          company = titleMatch[2]?.trim() || '';
-        }
-      }
-
-      // Limpa ratings/avaliações residuais no nome da empresa (ex: Decathlon3,9 -> Decathlon)
-      if (company) {
-        company = company.replace(/\d+([.,]\d+)?\s*$/, '').trim();
-      }
-
-      if (!text) continue;
-
-      if (!url) {
-        const hash = Buffer.from(text)
-          .toString('base64')
-          .replace(/[^a-zA-Z0-9]/g, '')
-          .substring(0, 50);
-        url = `urn:job-hash:${hash}`;
-      }
-
-      // Deduplicação pelo Título da Vaga e Empresa (não pelo link)
-      if (
-        this.jobDeduplicationService.isDuplicate(
-          { title, company },
-          seenJobKeys,
-        )
-      ) {
-        this.logger.debug(
-          `⏭️ Vaga descartada como duplicata (título + empresa já vistos): "${title}" | Empresa: "${company || 'Não informada'}"`,
-        );
-        continue;
-      }
-
-      // Registra a chave para evitar repetições no mesmo ciclo de execução
-      seenJobKeys.add(this.jobDeduplicationService.createKey(title, company));
-
-      uniqueCandidates.push({
-        title,
-        company,
-        text,
-        location: post.location,
-        url,
+      newlySentJobs.push({
+        url: candidate.url,
+        title: candidate.title,
+        company: candidate.company,
+        description: candidate.text,
       });
     }
 
-    // 4. Classificação Semântica em Lote (System-One Multi-Provider)
-    if (uniqueCandidates.length > 0) {
-      this.logger.log(
-        `🧠 Classificando ${uniqueCandidates.length} vagas inéditas com o Classificador System-One...`,
-      );
-      const evaluations =
-        typeof this.jevService.evaluateJobsBatch === 'function'
-          ? await this.jevService.evaluateJobsBatch(
-              uniqueCandidates,
-              userProfile,
-            )
-          : await Promise.all(
-              uniqueCandidates.map((candidate) =>
-                this.jevService.evaluateJob(candidate, userProfile),
-              ),
-            );
-
-      for (let i = 0; i < uniqueCandidates.length; i++) {
-        const candidate = uniqueCandidates[i];
-        const result = evaluations[i];
-        if (!result) continue;
-
-        if (result.shouldApply) {
-          this.logger.log(
-            `✅ Vaga aprovada (score: ${result.score}): ${candidate.title} ${candidate.company ? `(${candidate.company})` : ''}`,
-          );
-          approvedJobs.push({
-            title: candidate.title,
-            company: candidate.company,
-            score: result.score,
-            reason: result.reason,
-            url: candidate.url,
-            previewText: candidate.text
-              .substring(0, 150)
-              .replace(/\n/g, ' ')
-              .trim(),
-          });
-
-          const newJobRecord = {
-            url: candidate.url,
-            title: candidate.title,
-            company: candidate.company,
-            description: candidate.text,
-          };
-          newlySentJobs.push(newJobRecord);
-          recentStoredJobs.unshift(newJobRecord);
-        } else {
-          this.logger.debug(
-            `❌ Rejeitada: ${result.reason} — ${candidate.title}`,
-            candidate.url,
-          );
-        }
-      }
-    }
-
-    if (approvedJobs.length > 0) {
-      const savedRecords =
-        (await this.historyRepository.save(newlySentJobs)) || [];
-      const urlToIdMap = new Map<string, number>();
-      for (const rec of savedRecords) {
-        if (rec.url && rec.id) {
-          urlToIdMap.set(rec.url, rec.id);
-        }
-      }
-
-      for (const approved of approvedJobs) {
-        const dbId = urlToIdMap.get(approved.url);
-        if (dbId) {
-          approved.id = dbId;
-        }
-      }
-
-      const fullDigest = this.digestFormatter.format(approvedJobs);
-
-      this.logger.log(
-        `Enviando digest consolidado com ${approvedJobs.length} vagas para o WhatsApp...`,
-      );
-
-      await this.botService.sendMessage({
-        instanceName: process.env.INSTANCE_NAME!,
-        number: process.env.WHATSAPP_NUMBER!,
-        text: fullDigest,
-        delay: 1500,
-      });
-    } else {
+    if (approvedJobs.length === 0) {
       this.logger.log(
         'Nenhuma nova vaga aprovada passou pelos filtros nesta execução.',
       );
+      return [];
     }
-  }
 
-  private async scrapeWebProviders(
-    queries: string[],
-    locations: ILocationOption[],
-  ): Promise<ScrapedPost[]> {
-    const providers = [
-      glassdoorProvider,
-      linkedinProvider,
-      remotarProvider,
-    ];
-    const results: ScrapedPost[] = [];
-    const seenLinks = new Set<string>();
-    for (const providerConfig of providers) {
-      try {
-        this.logger.log(
-          `Iniciando scraping do provider: ${providerConfig.name}`,
-        );
-        const posts = await this.botService.makeRequest({
-          searchQueries: queries,
-          location: locations,
-          provider: providerConfig,
-        });
-
-        if (Array.isArray(posts) && posts.length > 0) {
-          this.logger.log(
-            `[${providerConfig.name}] ${posts.length} posts coletados.`,
-          );
-          results.push(...posts);
-        } else {
-          this.logger.warn(
-            `[${providerConfig.name}] Nenhum post retornado ou formato inválido.`,
-          );
-        }
-      } catch (error) {
-        this.logger.error(
-          `Erro no scraping do provider ${providerConfig.name}:`,
-          error,
-        );
+    // 4. Persistência e Disparo de Digest no WhatsApp
+    const savedRecords =
+      (await this.historyRepository.save(newlySentJobs)) || [];
+    const urlToIdMap = new Map<string, number>();
+    for (const rec of savedRecords) {
+      if (rec.url && rec.id) {
+        urlToIdMap.set(rec.url, rec.id);
       }
     }
 
-    return results;
-  }
-
-  private async scrapeLinkedinFeed(queries: string[]): Promise<ScrapedPost[]> {
-    try {
-      this.logger.log(
-        'Iniciando busca de posts informais no LinkedIn via Apify...',
-      );
-      const posts = await this.scrapeLinkedinPosts.scrapeLinkedinPosts(queries);
-
-      if (Array.isArray(posts) && posts.length > 0) {
-        this.logger.log(`[Apify LinkedIn] ${posts.length} posts coletados.`);
-        return posts;
-      }
-    } catch (error) {
-      this.logger.error(
-        'Erro ao buscar posts informais do LinkedIn via Apify:',
-        error,
-      );
+    for (const approved of approvedJobs) {
+      const dbId = urlToIdMap.get(approved.url);
+      if (dbId) approved.id = dbId;
     }
-    return [];
+
+    const fullDigest = this.digestFormatter.format(approvedJobs);
+    await this.botService.sendMessage({
+      instanceName: process.env.INSTANCE_NAME!,
+      number: process.env.WHATSAPP_NUMBER!,
+      text: fullDigest,
+      delay: 1500,
+    });
+
+    return approvedJobs;
   }
 }

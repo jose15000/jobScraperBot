@@ -1,20 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { chromium, Browser, BrowserContext } from 'playwright';
 import {
-  Isearch,
+  ILocationOption,
   IProviderConfig,
+  Isearch,
 } from 'src/interfaces/isearch/isearch.interface';
 import * as cheerio from 'cheerio';
 import { ScrapedPost } from 'src/interfaces/ScrapedPost/iscrapedpost.interface';
 
+interface ScrapeTask {
+  provider: IProviderConfig;
+  query: string;
+  locOption: ILocationOption;
+}
+
 @Injectable()
 export class PlaywrightService {
   private readonly logger = new Logger(PlaywrightService.name);
+  private readonly defaultConcurrency = Number(
+    process.env.SCRAPER_CONCURRENCY || 3,
+  );
 
   async startBrowser(): Promise<{
     browser: Browser;
     context: BrowserContext;
-    page: Page;
   }> {
     const browser: Browser = await chromium.launch({
       headless: true,
@@ -22,6 +31,7 @@ export class PlaywrightService {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
         '--disable-blink-features=AutomationControlled',
       ],
     });
@@ -34,102 +44,84 @@ export class PlaywrightService {
       timezoneId: 'America/Sao_Paulo',
     });
 
-    const page: Page = await context.newPage();
-
-    await page.addInitScript(() => {
+    await context.addInitScript(() => {
       Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
     });
 
-    await page.route('**/*', (route) => {
+    await context.route('**/*', (route) => {
       const resourceType = route.request().resourceType();
-      if (['image', 'media'].includes(resourceType)) {
+      if (['image', 'media', 'font'].includes(resourceType)) {
         route.abort();
       } else {
         route.continue();
       }
     });
 
-    return { browser, context, page };
+    return { browser, context };
   }
 
-  async scrape(search: Isearch): Promise<ScrapedPost[]> {
-    const { browser, context } = await this.startBrowser();
-    const allJobs: ScrapedPost[] = [];
+  /**
+   * Checks whether a location option is applicable to a given provider:
+   * - Respects `locOption.provider` when specified (e.g. 'glassdoor' or 'linkedin')
+   * - Respects `provider.supportsLocation(locOption)` when defined (e.g. Remotar remote-only)
+   */
+  isLocationSupported(
+    provider: IProviderConfig,
+    locOption: ILocationOption,
+  ): boolean {
+    if (locOption.provider && locOption.provider !== provider.name) {
+      return false;
+    }
+    if (provider.supportsLocation && !provider.supportsLocation(locOption)) {
+      return false;
+    }
+    return true;
+  }
 
-    const targetLocations = search.location!;
-    const tasks: { query: string; locOption: any }[] = [];
-
-    for (const query of search.searchQueries) {
-      for (const locOption of targetLocations) {
-        // Ignora buscas presenciais/híbridas em plataformas exclusivas de vagas remotas
-        if (
-          search.provider.name === 'remotar' &&
-          !locOption.workplaceTypes?.includes('remote')
-        ) {
-          continue;
+  /**
+   * Scrapes multiple providers reusing a SINGLE Chromium browser instance
+   * and a bounded tab concurrency pool to minimize RAM and CPU spikes on the VPS.
+   */
+  async scrapeProviders(
+    providers: IProviderConfig[],
+    queries: string[],
+    locations: ILocationOption[],
+    concurrency = this.defaultConcurrency,
+  ): Promise<ScrapedPost[]> {
+    const tasks: ScrapeTask[] = [];
+    for (const provider of providers) {
+      for (const query of queries) {
+        for (const locOption of locations) {
+          if (this.isLocationSupported(provider, locOption)) {
+            tasks.push({ provider, query, locOption });
+          }
         }
-        tasks.push({ query, locOption });
       }
     }
 
+    if (tasks.length === 0) {
+      return [];
+    }
+
+    const { browser, context } = await this.startBrowser();
+    const allJobs: ScrapedPost[] = [];
+
     try {
-      // Executa as requisições em abas concorrentes em paralelo
-      const pageResults = await Promise.all(
-        tasks.map(async ({ query, locOption }) => {
-          const page = await context.newPage();
-          try {
-            await page.route('**/*', (route) => {
-              const resourceType = route.request().resourceType();
-              if (['image', 'media', 'font'].includes(resourceType)) {
-                route.abort();
-              } else {
-                route.continue();
-              }
-            });
+      let taskIndex = 0;
+      const workerCount = Math.min(Math.max(1, concurrency), tasks.length);
 
-            const searchUrl = search.provider.buildSearchUrl(query, locOption);
-            this.logger.log(
-              `[${search.provider.name}] (${locOption.label || 'Busca'}) Navegando para: ${searchUrl}`,
-            );
+      const workers = Array.from({ length: workerCount }, async () => {
+        while (taskIndex < tasks.length) {
+          const currentIdx = taskIndex++;
+          const task = tasks[currentIdx];
+          if (!task) break;
 
-            await page.goto(searchUrl, {
-              waitUntil: 'domcontentloaded',
-              timeout: 45000,
-            });
+          const jobs = await this.scrapeSingleTask(context, task);
+          allJobs.push(...jobs);
+        }
+      });
 
-            // Scroll suave para forçar o carregamento/hidratação dos componentes dinamicos do Glassdoor/React
-            await page.evaluate(() => window.scrollBy(0, 300));
-
-            try {
-              await page.waitForSelector(
-                search.provider.selectors.waitSelector,
-                { timeout: 15000 },
-              );
-            } catch (e) {
-              // Tenta scroll adicional se o seletor não apareceu imediatamente
-              await page.evaluate(() => window.scrollBy(0, 500));
-              this.logger.warn(
-                `Aviso: Seletor '${search.provider.selectors.waitSelector}' não apareceu a tempo para [${search.provider.name} | ${query} | ${locOption.label || 'Busca'}]`,
-              );
-            }
-
-            const html = await page.content();
-            return this.ParseHtml(html, search.provider);
-          } catch (err) {
-            this.logger.error(
-              `Erro no scrape da combinação [${search.provider.name} | ${query}]:`,
-              err,
-            );
-            return [];
-          } finally {
-            await page.close();
-          }
-        }),
-      );
-
-      for (const jobs of pageResults) {
-        allJobs.push(...jobs);
-      }
+      await Promise.all(workers);
     } catch (error) {
       this.logger.error('Erro crítico no processo de scrape:', error);
       throw error;
@@ -140,13 +132,69 @@ export class PlaywrightService {
     return allJobs;
   }
 
-  private ParseHtml(html: string, provider: IProviderConfig): ScrapedPost[] {
+  async scrape(search: Isearch): Promise<ScrapedPost[]> {
+    return this.scrapeProviders(
+      [search.provider],
+      search.searchQueries,
+      search.location || [],
+    );
+  }
+
+  private async scrapeSingleTask(
+    context: BrowserContext,
+    { provider, query, locOption }: ScrapeTask,
+  ): Promise<ScrapedPost[]> {
+    const page = await context.newPage();
+    try {
+      const searchUrl = provider.buildSearchUrl(query, locOption);
+      this.logger.log(
+        `[${provider.name}] (${locOption.label || 'Busca'}) Navegando para: ${searchUrl}`,
+      );
+
+      await page.goto(searchUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45000,
+      });
+
+      await page.evaluate(() => window.scrollBy(0, 300));
+
+      try {
+        await page.waitForSelector(provider.selectors.waitSelector, {
+          timeout: 15000,
+        });
+      } catch {
+        await page.evaluate(() => window.scrollBy(0, 500));
+        this.logger.warn(
+          `Aviso: Seletor '${provider.selectors.waitSelector}' não apareceu a tempo para [${provider.name} | ${query} | ${locOption.label || 'Busca'}]`,
+        );
+      }
+
+      const html = await page.content();
+      return this.parseHtml(html, provider, locOption.label);
+    } catch (err) {
+      this.logger.error(
+        `Erro no scrape da combinação [${provider.name} | ${query}]:`,
+        err,
+      );
+      return [];
+    } finally {
+      await page.close();
+    }
+  }
+
+  parseHtml(
+    html: string,
+    provider: IProviderConfig,
+    locationLabel?: string,
+  ): ScrapedPost[] {
     const $ = cheerio.load(html);
     const jobs: ScrapedPost[] = [];
     const { selectors } = provider;
 
-    $(selectors.container).each((i, element) => {
+    $(selectors.container).each((_, element) => {
       const jobTitle = $(element).find(selectors.jobTitle).text().trim();
+      if (!jobTitle) return;
+
       const rawCompany = $(element)
         .find(selectors.companyName)
         .first()
@@ -159,23 +207,19 @@ export class PlaywrightService {
         : `Vaga: ${jobTitle}`;
 
       let postUrl = $(element).find(selectors.jobLink).attr('href') || '';
-
       if (postUrl && !postUrl.startsWith('http')) {
-        const cleanBaseUrl = selectors.baseUrl.endsWith('/')
-          ? selectors.baseUrl.slice(0, -1)
-          : selectors.baseUrl;
+        const cleanBaseUrl = selectors.baseUrl.replace(/\/$/, '');
         const cleanPostUrl = postUrl.startsWith('/') ? postUrl : `/${postUrl}`;
         postUrl = `${cleanBaseUrl}${cleanPostUrl}`;
       }
 
-      if (jobTitle) {
-        jobs.push({
-          title: jobTitle,
-          company: cleanCompany || undefined,
-          text: postText,
-          url: postUrl,
-        });
-      }
+      jobs.push({
+        title: jobTitle,
+        company: cleanCompany || undefined,
+        location: locationLabel,
+        text: postText,
+        url: postUrl,
+      });
     });
 
     return jobs;

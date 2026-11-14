@@ -1,8 +1,70 @@
 import { Injectable } from '@nestjs/common';
+import { ScrapedPost } from '../interfaces/ScrapedPost/iscrapedpost.interface';
 
 export interface JobIdentity {
   title: string;
   company?: string;
+}
+
+export interface NormalizedCandidateJob {
+  title: string;
+  company: string;
+  text: string;
+  location?: string;
+  url: string;
+}
+
+/**
+ * Normaliza um post raspado garantindo título, empresa limpa e URL determinística.
+ */
+export function normalizeScrapedPost(
+  post: ScrapedPost,
+): NormalizedCandidateJob | null {
+  const text = (post.text || '').trim();
+  if (!text && !post.title) return null;
+
+  let title = post.title?.trim() || '';
+  let company = post.company?.trim() || '';
+
+  const formattedMatch = (title || text).match(
+    /^Vaga:\s*(.*?)(?:\s*\|\s*Empresa:\s*(.*))?$/i,
+  );
+  if (formattedMatch) {
+    title = formattedMatch[1]?.trim() || title;
+    if (!company && formattedMatch[2]) {
+      company = formattedMatch[2].trim();
+    }
+  }
+
+  if (!title) {
+    title =
+      text
+        .split('\n')[0]
+        .replace(/[#*•-]/g, '')
+        .trim()
+        .substring(0, 100) || 'Desenvolvedor';
+  }
+
+  if (company) {
+    company = company.replace(/\d+([.,]\d+)?\s*$/, '').trim();
+  }
+
+  let url = post.url?.trim() || '';
+  if (!url) {
+    const hash = Buffer.from(text || title)
+      .toString('base64')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .substring(0, 50);
+    url = `urn:job-hash:${hash}`;
+  }
+
+  return {
+    title,
+    company,
+    text: text || `Vaga: ${title}`,
+    location: post.location,
+    url,
+  };
 }
 
 /**
